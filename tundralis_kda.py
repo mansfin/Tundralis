@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-analytix_kda.py — Key Driver Analysis CLI
+tundralis_kda.py — Key Driver Analysis CLI
 
 Usage:
-  python analytix_kda.py --data data/sample_survey.csv --target overall_satisfaction
-  python analytix_kda.py --data data/sample_survey.csv --target overall_satisfaction \\
+  python tundralis_kda.py --data data/sample_survey.csv --target overall_satisfaction
+  python tundralis_kda.py --data data/sample_survey.csv --target overall_satisfaction \\
       --predictors ease_of_use customer_support price_value \\
       --output output/my_report.pptx \\
       --openai-model gpt-4o
@@ -17,22 +17,22 @@ import logging
 import sys
 from pathlib import Path
 
-from analytix.utils import setup_logging, load_survey_data, validate_columns, prepare_data, output_path
-from analytix.analysis import run_kda
-from analytix.narratives import NarrativeEngine
-from analytix.charts import (
+from tundralis.utils import setup_logging, load_survey_data, validate_columns, prepare_data, output_path
+from tundralis.analysis import run_kda
+from tundralis.narratives import NarrativeEngine
+from tundralis.charts import (
     chart_importance_bar,
     chart_quadrant,
     chart_correlation_heatmap,
     chart_model_fit,
     chart_driver_detail,
 )
-from analytix.report import ReportBuilder
+from tundralis.report import ReportBuilder
 
 
 def parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Analytix — Key Driver Analysis Pipeline",
+        description="Tundralis — Key Driver Analysis Pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

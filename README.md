@@ -1,6 +1,6 @@
-# Analytix KDA — Key Driver Analysis Pipeline
+# Tundralis KDA — Key Driver Analysis Pipeline
 
-> **analytix.ai** · Professional survey analytics, automated.
+> **tundralis.com** · Professional survey analytics, automated.
 
 A production-grade Python pipeline that takes survey data and produces a polished consulting-style PowerPoint report — complete with statistical analysis, priority matrices, and (optionally) AI-generated narratives.
 
@@ -36,7 +36,7 @@ This creates `data/sample_survey.csv` — 500 synthetic customer satisfaction re
 ### 3. Run the pipeline
 
 ```bash
-python analytix_kda.py --data data/sample_survey.csv --target overall_satisfaction
+python tundralis_kda.py --data data/sample_survey.csv --target overall_satisfaction
 ```
 
 Output: `output/overall_satisfaction_kda_report.pptx`
@@ -45,7 +45,7 @@ Output: `output/overall_satisfaction_kda_report.pptx`
 
 ```bash
 export OPENAI_API_KEY=sk-...
-python analytix_kda.py --data data/sample_survey.csv --target overall_satisfaction
+python tundralis_kda.py --data data/sample_survey.csv --target overall_satisfaction
 ```
 
 ---
@@ -53,7 +53,7 @@ python analytix_kda.py --data data/sample_survey.csv --target overall_satisfacti
 ## CLI Options
 
 ```
-usage: analytix_kda.py [--data DATA] [--target TARGET]
+usage: tundralis_kda.py [--data DATA] [--target TARGET]
                         [--predictors PREDICTOR [PREDICTOR ...]]
                         [--output OUTPUT]
                         [--openai-model MODEL]
@@ -74,19 +74,19 @@ Options:
 
 ```bash
 # Specify predictors manually
-python analytix_kda.py \
+python tundralis_kda.py \
   --data data/sample_survey.csv \
   --target overall_satisfaction \
   --predictors ease_of_use customer_support price_value reliability
 
 # Custom output path
-python analytix_kda.py \
+python tundralis_kda.py \
   --data data/sample_survey.csv \
   --target overall_satisfaction \
   --output output/q1_report.pptx
 
 # No AI (works without OpenAI key)
-python analytix_kda.py \
+python tundralis_kda.py \
   --data data/sample_survey.csv \
   --target overall_satisfaction \
   --no-ai
@@ -142,12 +142,12 @@ Non-numeric columns (IDs, text) are ignored if not specified as predictors.
 ## Project Structure
 
 ```
-analytix/
+tundralis/
 ├── README.md
 ├── requirements.txt
-├── analytix_kda.py          # CLI entry point
+├── tundralis_kda.py          # CLI entry point
 ├── generate_sample_data.py  # Synthetic data generator
-├── analytix/
+├── tundralis/
 │   ├── __init__.py
 │   ├── analysis.py          # Correlation, OLS, Shapley importance
 │   ├── narratives.py        # AI narrative generation (OpenAI)
@@ -189,4 +189,4 @@ Without an API key, all narratives fall back to clean template-based text. The r
 
 ## License
 
-Proprietary — Analytix LLC · analytix.ai
+Proprietary — Tundralis LLC · tundralis.com

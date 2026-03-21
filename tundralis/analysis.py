@@ -243,7 +243,7 @@ def build_quadrant_mapping(
     - Performance: Mean score of the predictor (stated/observed)
     Both are normalized to 0–1 scale. Quadrant cutoffs at medians.
     """
-    from analytix.utils import scale_to_range
+    from tundralis.utils import scale_to_range
 
     imp_arr = importance.ranking.set_index("predictor")["importance"].reindex(X.columns).values
     perf_arr = X.mean().values

@@ -112,7 +112,7 @@ class ReportBuilder:
         # Footer
         self._add_rect(slide, 0, Inches(7.2), SLIDE_W, Inches(0.3), DARK_BLUE)
         self._add_textbox(
-            slide, "analytix.ai  ·  Confidential",
+            slide, "tundralis.com  ·  Confidential",
             Inches(0.3), Inches(7.22), Inches(5), Inches(0.25),
             font_size=7, color=MID_GRAY,
         )
@@ -138,12 +138,12 @@ class ReportBuilder:
 
         # Brand name (top left)
         self._add_textbox(
-            slide, "ANALYTIX",
+            slide, "TUNDRALIS",
             Inches(0.4), Inches(0.3), Inches(4), Inches(0.5),
             font_size=14, bold=True, color=TEAL,
         )
         self._add_textbox(
-            slide, "analytix.ai",
+            slide, "tundralis.com",
             Inches(0.4), Inches(0.75), Inches(4), Inches(0.35),
             font_size=10, color=MID_GRAY,
         )
