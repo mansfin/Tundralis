@@ -94,10 +94,21 @@ def _detect_target(columns: list[str], numeric_columns: list[str]) -> str | None
 
 
 def _suggested_predictors(df, inferred_target: str | None) -> list[str]:
-    if not inferred_target:
-        return []
-    preds = infer_predictors(df, inferred_target)
-    return [c for c in preds if c != inferred_target and not c.lower().endswith("_id")]
+    return []
+
+
+def _predictor_candidates(df, inferred_target: str | None) -> list[dict]:
+    numeric_cols = set(df.select_dtypes(include="number").columns.tolist())
+    candidates = []
+    for col in df.columns:
+        if col == inferred_target:
+            continue
+        lower = col.lower()
+        if lower.endswith("_id") or lower in {"id", "response_id", "respondent_id", "record_id"}:
+            continue
+        kind = "numeric" if col in numeric_cols else "categorical"
+        candidates.append({"name": col, "kind": kind})
+    return candidates
 
 
 @app.get("/")
@@ -153,9 +164,16 @@ def run_job():
         if key.startswith("display_name__") and value.strip():
             display_name_map[key.split("display_name__", 1)[1]] = value.strip()
 
+    segment_definitions_raw = request.form.get("segment_definitions")
+    try:
+        segment_definitions = json.loads(segment_definitions_raw) if segment_definitions_raw else []
+    except json.JSONDecodeError:
+        segment_definitions = []
+
     mapping = {
         "target_column": target_column,
         "segment_columns": segment_columns,
+        "segment_definitions": segment_definitions,
         "predictor_columns": predictors,
         "display_name_map": display_name_map,
     }
@@ -192,9 +210,12 @@ def run_job():
             numeric_columns=numeric_columns,
             inferred_target=inferred_target,
             inferred_predictors=inferred_predictors,
+            predictor_candidates=_predictor_candidates(df, inferred_target),
         ), 500
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
+    payload.setdefault("input_summary", {})["segment_definitions"] = segment_definitions
+    json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     preview_images = _write_preview_charts(job_id, data_path, mapping_path)
     return render_template(
         "result.html",
@@ -202,22 +223,6 @@ def run_job():
         filename=filename,
         payload=payload,
         logs=result.stdout,
-        preview_images=preview_images,
-    )
-
-
-@app.get("/artifacts/<job_id>/<path:name>")
-@basic_auth
-def artifacts(job_id: str, name: str):
-    return send_from_directory(_job_dir(job_id), name, as_attachment=False)
-
-
-if __name__ == "__main__":
-    host = os.environ.get("TUNDRALIS_HOST", "127.0.0.1")
-    port = int(os.environ.get("TUNDRALIS_PORT", "7860"))
-    app.run(host=host, port=port, debug=False)
-se)
-=result.stdout,
         preview_images=preview_images,
     )
 

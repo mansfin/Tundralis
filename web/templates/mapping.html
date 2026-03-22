@@ -12,9 +12,10 @@
       <h1>Review mapping</h1>
       <p class="sub">File: <strong>{{ filename }}</strong></p>
       {% if error %}<div class="error">{{ error }}</div>{% endif %}
-      <form action="/run" method="post" class="mapping-stack">
+      <form action="/run" method="post" class="mapping-stack" id="mappingForm">
         <input type="hidden" name="job_id" value="{{ job_id }}">
         <input type="hidden" name="filename" value="{{ filename }}">
+        <input type="hidden" name="segment_definitions" id="segmentDefinitionsInput" value="[]">
 
         <div class="card inner">
           <h2>Outcome</h2>
@@ -55,7 +56,7 @@
                 <div class="picker-list" id="predictorPicker">
                   {% for item in predictor_candidates %}
                   <label class="picker-item" data-col="{{ item.name|lower }}">
-                    <input type="checkbox" name="predictor_columns" value="{{ item.name }}" {% if item.name in inferred_predictors %}checked{% endif %}>
+                    <input type="checkbox" name="predictor_columns" value="{{ item.name }}">
                     <span class="mono">{{ item.name }}</span>
                     <span class="pill {{ item.kind }}">{{ item.kind }}</span>
                   </label>
@@ -68,7 +69,7 @@
               <label class="field-label">Selected predictor package</label>
               <div class="selected-package" id="selectedPredictorPackage">
                 {% for item in predictor_candidates %}
-                <div class="selected-item {% if item.name not in inferred_predictors %}hidden{% endif %}" data-selected-item="{{ item.name }}">
+                <div class="selected-item hidden" data-selected-item="{{ item.name }}">
                   <div class="selected-item-head">
                     <span class="mono">{{ item.name }}</span>
                     <span class="pill {{ item.kind }}">{{ item.kind }}</span>
@@ -88,18 +89,72 @@
 
         <div class="card inner">
           <h2>Segments</h2>
-          <p class="sub small">Core functionality. Pick variables to use for segment definitions now; builder UI comes next.</p>
-          <div class="picker-card">
-            <div class="picker-list compact">
-              {% for col in columns %}
-              <label class="picker-item">
-                <input type="checkbox" name="segment_columns" value="{{ col }}"> <span class="mono">{{ col }}</span>
-              </label>
-              {% endfor %}
+          <p class="sub small">Create named segments with simple rule groups.</p>
+
+          <div class="field-grid two">
+            <div>
+              <label class="field-label">Available segment source columns</label>
+              <div class="picker-card">
+                <div class="picker-list compact">
+                  {% for col in columns %}
+                  <label class="picker-item">
+                    <input type="checkbox" name="segment_columns" value="{{ col }}"> <span class="mono">{{ col }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="segment-builder-note">
-            Next step: rule-based segment builder (AND/OR, equals, in-list, gt/lt, contains).
+            <div>
+              <label class="field-label">Segment builder</label>
+              <div class="picker-card">
+                <div class="field-grid two">
+                  <div>
+                    <label class="field-label small">Segment name</label>
+                    <input type="text" id="segmentName" placeholder="e.g. Enterprise accounts">
+                  </div>
+                  <div>
+                    <label class="field-label small">Logic</label>
+                    <select id="segmentLogic">
+                      <option value="AND">AND</option>
+                      <option value="OR">OR</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="field-grid three">
+                  <div>
+                    <label class="field-label small">Column</label>
+                    <select id="segmentRuleColumn">
+                      {% for col in columns %}
+                      <option value="{{ col }}">{{ col }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label small">Operator</label>
+                    <select id="segmentRuleOperator">
+                      <option value="equals">equals</option>
+                      <option value="in">in list</option>
+                      <option value="gt">&gt;</option>
+                      <option value="lt">&lt;</option>
+                      <option value="contains">contains</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label small">Value</label>
+                    <input type="text" id="segmentRuleValue" placeholder="e.g. Enterprise or 7">
+                  </div>
+                </div>
+
+                <div class="picker-toolbar">
+                  <button type="button" class="button-link secondary" id="addSegmentRule">Add rule</button>
+                  <button type="button" class="button-link secondary" id="saveSegmentDefinition">Save segment</button>
+                </div>
+
+                <div class="selected-package" id="segmentRuleDraft"></div>
+                <div class="selected-package" id="savedSegments"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -111,6 +166,16 @@
     const searchInput = document.getElementById('predictorSearch');
     const pickerItems = Array.from(document.querySelectorAll('.picker-item[data-col]'));
     const emptyState = document.getElementById('predictorEmptyState');
+    const segmentDefinitionsInput = document.getElementById('segmentDefinitionsInput');
+    const segmentRuleDraft = document.getElementById('segmentRuleDraft');
+    const savedSegments = document.getElementById('savedSegments');
+    const segmentName = document.getElementById('segmentName');
+    const segmentLogic = document.getElementById('segmentLogic');
+    const segmentRuleColumn = document.getElementById('segmentRuleColumn');
+    const segmentRuleOperator = document.getElementById('segmentRuleOperator');
+    const segmentRuleValue = document.getElementById('segmentRuleValue');
+    let draftRules = [];
+    let savedSegmentDefs = [];
 
     function refreshSelectedPackage() {
       let visibleCount = 0;
@@ -127,6 +192,39 @@
         }
       });
       emptyState.classList.toggle('hidden', visibleCount !== 0);
+    }
+
+    function renderDraftRules() {
+      segmentRuleDraft.innerHTML = draftRules.length ? '' : '<div class="empty-state">No draft rules yet.</div>';
+      draftRules.forEach((rule, idx) => {
+        const el = document.createElement('div');
+        el.className = 'selected-item';
+        el.innerHTML = `<div class="selected-item-head"><span>${rule.column} ${rule.operator} ${rule.value}</span><button type="button" class="button-link secondary" data-remove-rule="${idx}">Remove</button></div>`;
+        segmentRuleDraft.appendChild(el);
+      });
+      document.querySelectorAll('[data-remove-rule]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          draftRules.splice(Number(btn.dataset.removeRule), 1);
+          renderDraftRules();
+        });
+      });
+    }
+
+    function renderSavedSegments() {
+      savedSegments.innerHTML = savedSegmentDefs.length ? '' : '<div class="empty-state">No saved segments yet.</div>';
+      savedSegmentDefs.forEach((seg, idx) => {
+        const el = document.createElement('div');
+        el.className = 'selected-item';
+        el.innerHTML = `<div class="selected-item-head"><span>${seg.name} (${seg.logic})</span><button type="button" class="button-link secondary" data-remove-segment="${idx}">Remove</button></div><div>${seg.rules.map(r => `${r.column} ${r.operator} ${r.value}`).join('<br>')}</div>`;
+        savedSegments.appendChild(el);
+      });
+      document.querySelectorAll('[data-remove-segment]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          savedSegmentDefs.splice(Number(btn.dataset.removeSegment), 1);
+          segmentDefinitionsInput.value = JSON.stringify(savedSegmentDefs);
+          renderSavedSegments();
+        });
+      });
     }
 
     pickerItems.forEach((item) => {
@@ -151,7 +249,28 @@
       });
     });
 
+    document.getElementById('addSegmentRule')?.addEventListener('click', () => {
+      const value = segmentRuleValue.value.trim();
+      if (!value) return;
+      draftRules.push({ column: segmentRuleColumn.value, operator: segmentRuleOperator.value, value });
+      segmentRuleValue.value = '';
+      renderDraftRules();
+    });
+
+    document.getElementById('saveSegmentDefinition')?.addEventListener('click', () => {
+      const name = segmentName.value.trim();
+      if (!name || draftRules.length === 0) return;
+      savedSegmentDefs.push({ name, logic: segmentLogic.value, rules: [...draftRules] });
+      segmentDefinitionsInput.value = JSON.stringify(savedSegmentDefs);
+      segmentName.value = '';
+      draftRules = [];
+      renderDraftRules();
+      renderSavedSegments();
+    });
+
     refreshSelectedPackage();
+    renderDraftRules();
+    renderSavedSegments();
   </script>
 </body>
 </html>
