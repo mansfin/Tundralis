@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tundralis.com/schemas/driver-metrics.schema.json",
+  "title": "Tundralis Driver Metrics",
+  "type": "object",
+  "required": [
+    "project_id",
+    "outcome_variable",
+    "modeling_context",
+    "drivers"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "outcome_variable": {
+      "type": "string"
+    },
+    "modeling_context": {
+      "type": "object",
+      "required": [
+        "sample_filter",
+        "weight_variable",
+        "importance_method",
+        "impact_method",
+        "nonlinear_benchmark_method"
+      ],
+      "properties": {
+        "sample_filter": { "type": "string" },
+        "weight_variable": { "type": ["string", "null"] },
+        "importance_method": { "type": "string" },
+        "impact_method": { "type": "string" },
+        "nonlinear_benchmark_method": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "driver_id",
+          "driver_label",
+          "performance",
+          "importance",
+          "impact",
+          "opportunity",
+          "classification"
+        ],
+        "properties": {
+          "driver_id": { "type": "string" },
+          "driver_label": { "type": "string" },
+          "scale": {
+            "type": "object",
+            "properties": {
+              "min": { "type": "number" },
+              "max": { "type": "number" }
+            },
+            "required": ["min", "max"]
+          },
+          "performance": {
+            "type": "object",
+            "required": ["mean", "headroom"],
+            "properties": {
+              "mean": { "type": "number" },
+              "std_dev": { "type": "number" },
+              "headroom": { "type": "number" },
+              "normalized_mean_0_100": { "type": "number" }
+            },
+            "additionalProperties": true
+          },
+          "importance": {
+            "type": "object",
+            "required": ["method", "share_of_explained_variance", "rank"],
+            "properties": {
+              "method": { "type": "string" },
+              "raw_contribution": { "type": "number" },
+              "share_of_explained_variance": { "type": "number" },
+              "rank": { "type": "integer" }
+            },
+            "additionalProperties": true
+          },
+          "impact": {
+            "type": "object",
+            "required": ["method", "one_point_dv_change", "rank"],
+            "properties": {
+              "method": { "type": "string" },
+              "coefficient": { "type": "number" },
+              "one_point_dv_change": { "type": "number" },
+              "max_gain": { "type": "number" },
+              "rank": { "type": "integer" }
+            },
+            "additionalProperties": true
+          },
+          "opportunity": {
+            "type": "object",
+            "required": ["score", "rank"],
+            "properties": {
+              "score": { "type": "number" },
+              "rank": { "type": "integer" },
+              "components": {
+                "type": "object",
+                "properties": {
+                  "impact_component": { "type": "number" },
+                  "headroom_component": { "type": "number" },
+                  "confidence_component": { "type": "number" }
+                },
+                "additionalProperties": true
+              }
+            },
+            "additionalProperties": true
+          },
+          "nonlinear_benchmark": {
+            "type": "object",
+            "properties": {
+              "xgboost_global_importance_rank": { "type": ["integer", "null"] },
+              "xgboost_shap_rank": { "type": ["integer", "null"] },
+              "agreement_with_linear": {
+                "type": "string",
+                "enum": ["high", "moderate", "low", "unknown"]
+              }
+            },
+            "additionalProperties": true
+          },
+          "stability": {
+            "type": "object",
+            "properties": {
+              "bootstrap_rank_stability": { "type": "number" },
+              "coefficient_sign_stability": { "type": "number" },
+              "cross_method_agreement": {
+                "type": "string",
+                "enum": ["high", "moderate", "low", "unknown"]
+              }
+            },
+            "additionalProperties": true
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "Core Priority",
+              "Foundational Driver",
+              "High-Potential Lever",
+              "Lower Priority"
+            ]
+          },
+          "narrative_flags": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

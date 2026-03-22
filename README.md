@@ -4,6 +4,11 @@
 
 A production-grade Python pipeline that takes survey data and produces a polished consulting-style PowerPoint report — complete with statistical analysis, priority matrices, and (optionally) AI-generated narratives.
 
+Methodology direction is documented in `docs/methodology/`, including:
+- `tundralis-methodology-spec.md`
+- `driver-metrics-schema.json`
+- `deck-blueprint.md`
+
 ---
 
 ## Features
