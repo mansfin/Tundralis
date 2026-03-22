@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
@@ -20,13 +19,8 @@ LEAF_OPERATORS = {
     "not_null",
 }
 NUMERIC_OPERATORS = {"gt", "gte", "lt", "lte"}
-
-
-@dataclass
-class SegmentPreview:
-    name: str
-    matched_count: int
-    matched_pct: float
+NULL_OPERATORS = {"is_null", "not_null"}
+TEXT_OPERATORS = {"contains"}
 
 
 def _coerce_scalar(value: Any):
@@ -55,13 +49,13 @@ def _values_list(value: Any) -> list[Any]:
 
 
 def _infer_column_kind(series: pd.Series) -> str:
+    if pd.api.types.is_bool_dtype(series):
+        return "boolean"
     if pd.api.types.is_numeric_dtype(series):
         return "numeric"
     coerced = pd.to_numeric(series.dropna(), errors="coerce")
     if not coerced.empty and float(coerced.notna().mean()) >= 0.95:
         return "numeric"
-    if pd.api.types.is_bool_dtype(series):
-        return "boolean"
     return "categorical"
 
 
@@ -76,8 +70,16 @@ def _normalize_leaf_rule(rule: dict[str, Any], df: pd.DataFrame) -> dict[str, An
         raise ValueError(f"Unsupported segment operator: {operator}")
 
     kind = rule.get("value_type") or _infer_column_kind(df[column])
+    if operator in NUMERIC_OPERATORS and kind != "numeric":
+        raise ValueError(f"Operator '{operator}' requires a numeric column: {column}")
+    if operator in TEXT_OPERATORS and kind == "numeric":
+        raise ValueError(f"Operator '{operator}' is not supported for numeric column: {column}")
+
     normalized = {"column": column, "operator": operator, "value_type": kind}
-    if operator not in {"is_null", "not_null"}:
+    if operator not in NULL_OPERATORS:
+        value = rule.get("value")
+        if value is None or str(value).strip() == "":
+            raise ValueError(f"Segment rule for column '{column}' is missing a value")
         normalized["value"] = rule.get("value")
     return normalized
 
@@ -116,7 +118,11 @@ def normalize_segment_definition(segment: dict[str, Any], df: pd.DataFrame) -> d
 
 
 def normalize_segment_definitions(segment_definitions: list[dict] | None, df: pd.DataFrame) -> list[dict]:
-    return [normalize_segment_definition(segment, df) for segment in (segment_definitions or [])]
+    normalized = [normalize_segment_definition(segment, df) for segment in (segment_definitions or [])]
+    names = [segment["name"].strip().lower() for segment in normalized]
+    if len(names) != len(set(names)):
+        raise ValueError("Segment names must be unique")
+    return normalized
 
 
 def _evaluate_leaf(rule: dict[str, Any], df: pd.DataFrame) -> pd.Series:
@@ -176,11 +182,19 @@ def preview_segments(df: pd.DataFrame, segment_definitions: list[dict] | None) -
     total = len(df)
     for segment in normalized:
         matched = int(evaluate_segment_tree(segment["tree"], df).fillna(False).sum())
+        warnings: list[str] = []
+        if total and matched == 0:
+            warnings.append("zero_matches")
+        if total and matched == total:
+            warnings.append("all_rows_match")
+        if total and matched / total >= 0.9:
+            warnings.append("nearly_everyone_matches")
         previews.append(
             {
                 "name": segment["name"],
                 "matched_count": matched,
                 "matched_pct": round((matched / total) * 100, 1) if total else 0.0,
+                "warnings": warnings,
                 "tree": segment["tree"],
             }
         )

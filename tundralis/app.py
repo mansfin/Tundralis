@@ -171,12 +171,15 @@ def preview_mapping():
     job_id = payload.get("job_id") or uuid.uuid4().hex[:12]
     if not filename:
         abort(400)
-    context = _mapping_context(
-        filename,
-        job_id=job_id,
-        recode_definitions=payload.get("recode_definitions", []),
-        segment_definitions=payload.get("segment_definitions", []),
-    )
+    try:
+        context = _mapping_context(
+            filename,
+            job_id=job_id,
+            recode_definitions=payload.get("recode_definitions", []),
+            segment_definitions=payload.get("segment_definitions", []),
+        )
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
     return jsonify(
         {
             "columns": context["columns"],

@@ -1,4 +1,5 @@
 import io
+import json
 import unittest
 from pathlib import Path
 
@@ -72,6 +73,88 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn("segment_group", payload["columns"])
         self.assertEqual(payload["segment_previews"][0]["name"], "Enterprise only")
         self.assertGreater(payload["segment_previews"][0]["matched_count"], 0)
+
+    def test_preview_rejects_invalid_numeric_operator_on_text_column(self):
+        client = app.test_client()
+        csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
+        inspect_response = client.post(
+            "/inspect",
+            data={"survey_file": (io.BytesIO(csv_bytes), "client_style_kda.csv")},
+            content_type="multipart/form-data",
+        )
+        html = inspect_response.get_data(as_text=True)
+        marker = 'name="filename" value="'
+        start = html.index(marker) + len(marker)
+        filename = html[start: html.index('"', start)]
+
+        response = client.post(
+            "/preview",
+            json={
+                "filename": filename,
+                "segment_definitions": [
+                    {
+                        "name": "Bad segment",
+                        "tree": {
+                            "all": [
+                                {"column": "segment", "operator": "gt", "value": 5}
+                            ]
+                        },
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        payload = response.get_json()
+        self.assertIn("requires a numeric column", payload["error"])
+
+    def test_run_persists_segment_summaries(self):
+        client = app.test_client()
+        csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
+        inspect_response = client.post(
+            "/inspect",
+            data={"survey_file": (io.BytesIO(csv_bytes), "client_style_kda.csv")},
+            content_type="multipart/form-data",
+        )
+        html = inspect_response.get_data(as_text=True)
+        marker = 'name="filename" value="'
+        start = html.index(marker) + len(marker)
+        filename = html[start: html.index('"', start)]
+        job_marker = 'name="job_id" value="'
+        job_start = html.index(job_marker) + len(job_marker)
+        job_id = html[job_start: html.index('"', job_start)]
+
+        response = client.post(
+            "/run",
+            data={
+                "job_id": job_id,
+                "filename": filename,
+                "target_column": "overall_sat",
+                "predictor_columns": [
+                    "product_quality_score",
+                    "ease_use_score",
+                    "support_experience",
+                    "value_for_money",
+                ],
+                "segment_columns": ["segment", "region"],
+                "segment_definitions": json.dumps([
+                    {
+                        "name": "Enterprise only",
+                        "tree": {
+                            "all": [
+                                {"column": "segment", "operator": "equals", "value": "Enterprise"}
+                            ]
+                        },
+                    }
+                ]),
+                "recode_definitions": "[]",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        self.assertIn("Enterprise only", html)
+        self.assertIn("Segment summaries", html)
 
 
 if __name__ == "__main__":
