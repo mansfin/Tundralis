@@ -37,6 +37,7 @@ def build_analysis_run_payload(
     recommendations: list[str] | None = None,
 ) -> dict:
     recommendations = recommendations or []
+    display_name_map = display_name_map or {}
 
     rows_input = int(len(input_df))
     rows_with_valid_dv = int(input_df[target_column].notna().sum())
@@ -257,3 +258,5 @@ def build_analysis_run_payload(
         },
         "recommendations": recs,
     }
+  }
+}

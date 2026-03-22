@@ -4,6 +4,7 @@ __pycache__/
 .env
 output/
 app_runtime/
+!app_runtime/.env.example
 *.egg-info/
 dist/
 build/

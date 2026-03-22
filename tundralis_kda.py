@@ -143,6 +143,7 @@ def main(argv=None):
         missingness_summary=missingness_summary,
         driver_usable_n=driver_usable_n,
         recommendations=recommendations,
+        display_name_map=mapping.get("display_name_map", {}),
     )
     payload["run_info"]["version"] = __version__
     payload["input_summary"]["weight_column"] = config.weight_column

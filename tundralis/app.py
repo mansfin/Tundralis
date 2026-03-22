@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
 import uuid
+from functools import wraps
 from pathlib import Path
 
-from flask import Flask, render_template, request, send_from_directory, abort
+from flask import Flask, render_template, request, send_from_directory, abort, Response
 
 from tundralis.utils import load_survey_data, prepare_sparse_model_data
 from tundralis.ingestion import infer_predictors, load_mapping_config, resolve_config, validate_resolved_config
@@ -26,6 +28,39 @@ app = Flask(
     template_folder=str(ROOT / "web" / "templates"),
     static_folder=str(ROOT / "web" / "static"),
 )
+
+
+def _auth_ok() -> bool:
+    required_user = os.environ.get("TUNDRALIS_BASIC_AUTH_USER")
+    required_pass = os.environ.get("TUNDRALIS_BASIC_AUTH_PASS")
+    if not required_user or not required_pass:
+        return True
+    header = request.headers.get("Authorization", "")
+    if not header.startswith("Basic "):
+        return False
+    try:
+        decoded = base64.b64decode(header.split(" ", 1)[1]).decode("utf-8")
+        user, pw = decoded.split(":", 1)
+    except Exception:
+        return False
+    return user == required_user and pw == required_pass
+
+
+def _require_auth():
+    return Response(
+        "Authentication required",
+        401,
+        {"WWW-Authenticate": 'Basic realm="tundralis"'},
+    )
+
+
+def basic_auth(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not _auth_ok():
+            return _require_auth()
+        return view(*args, **kwargs)
+    return wrapped
 
 
 def _job_dir(job_id: str) -> Path:
@@ -58,24 +93,7 @@ def _write_preview_charts(job_id: str, data_path: Path, mapping_path: Path) -> l
     return list(previews.keys())
 
 
-@app.get("/")
-def index():
-    return render_template("index.html")
-
-
-@app.post("/inspect")
-def inspect_file():
-    f = request.files.get("survey_file")
-    if not f or not f.filename:
-        return render_template("index.html", error="Upload a CSV first."), 400
-
-    job_id = uuid.uuid4().hex[:12]
-    upload_path = UPLOAD_DIR / f"{job_id}_{Path(f.filename).name}"
-    f.save(upload_path)
-
-    df = load_survey_data(upload_path)
-    columns = list(df.columns)
-    numeric_columns = df.select_dtypes(include="number").columns.tolist()
+def _detect_target(columns: list[str], numeric_columns: list[str]) -> str | None:
     target_candidates = [
         "overall_satisfaction",
         "overall_sat",
@@ -89,7 +107,39 @@ def inspect_file():
             (c for c in numeric_columns if "overall" in c.lower() or "satisfaction" in c.lower()),
             numeric_columns[0],
         )
-    inferred_predictors = infer_predictors(df, inferred_target) if numeric_columns and inferred_target else []
+    return inferred_target
+
+
+def _suggested_predictors(df, inferred_target: str | None) -> list[str]:
+    if not inferred_target:
+        return []
+    preds = infer_predictors(df, inferred_target)
+    return [c for c in preds if c != inferred_target and not c.lower().endswith("_id")]
+
+
+@app.get("/")
+@basic_auth
+def index():
+    return render_template("index.html")
+
+
+@app.post("/inspect")
+@basic_auth
+def inspect_file():
+    f = request.files.get("survey_file")
+    if not f or not f.filename:
+        return render_template("index.html", error="Upload a CSV first."), 400
+
+    job_id = uuid.uuid4().hex[:12]
+    upload_path = UPLOAD_DIR / f"{job_id}_{Path(f.filename).name}"
+    f.save(upload_path)
+
+    df = load_survey_data(upload_path)
+    columns = list(df.columns)
+    numeric_columns = df.select_dtypes(include="number").columns.tolist()
+    inferred_target = _detect_target(columns, numeric_columns)
+    inferred_predictors = _suggested_predictors(df, inferred_target)
+    id_candidates = [c for c in columns if c.lower() in {"response_id", "respondent_id", "record_id", "id"} or c.lower().endswith("_id")]
 
     return render_template(
         "mapping.html",
@@ -99,10 +149,12 @@ def inspect_file():
         numeric_columns=numeric_columns,
         inferred_target=inferred_target,
         inferred_predictors=inferred_predictors,
+        id_candidates=id_candidates,
     )
 
 
 @app.post("/run")
+@basic_auth
 def run_job():
     job_id = request.form.get("job_id") or uuid.uuid4().hex[:12]
     filename = request.form.get("filename")
@@ -116,12 +168,18 @@ def run_job():
     segment_columns = request.form.getlist("segment_columns")
     excluded_columns = request.form.getlist("excluded_columns")
 
+    display_name_map = {}
+    for key, value in request.form.items():
+        if key.startswith("display_name__") and value.strip():
+            display_name_map[key.split("display_name__", 1)[1]] = value.strip()
+
     mapping = {
         "target_column": target_column,
         "respondent_id_column": respondent_id_column,
         "segment_columns": segment_columns,
         "excluded_columns": excluded_columns,
         "predictor_columns": predictors,
+        "display_name_map": display_name_map,
     }
     mapping_path = MAPPING_DIR / f"{job_id}.json"
     mapping_path.write_text(json.dumps(mapping, indent=2), encoding="utf-8")
@@ -142,13 +200,22 @@ def run_job():
     result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
 
     if result.returncode != 0:
+        df = load_survey_data(data_path)
+        columns = list(df.columns)
+        numeric_columns = df.select_dtypes(include="number").columns.tolist()
+        inferred_target = _detect_target(columns, numeric_columns)
+        inferred_predictors = _suggested_predictors(df, inferred_target)
+        id_candidates = [c for c in columns if c.lower() in {"response_id", "respondent_id", "record_id", "id"} or c.lower().endswith("_id")]
         return render_template(
             "mapping.html",
             error=result.stderr or result.stdout or "Run failed.",
             job_id=job_id,
             filename=filename,
-            columns=[],
-            numeric_columns=[],
+            columns=columns,
+            numeric_columns=numeric_columns,
+            inferred_target=inferred_target,
+            inferred_predictors=inferred_predictors,
+            id_candidates=id_candidates,
         ), 500
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
@@ -164,6 +231,7 @@ def run_job():
 
 
 @app.get("/artifacts/<job_id>/<path:name>")
+@basic_auth
 def artifacts(job_id: str, name: str):
     return send_from_directory(_job_dir(job_id), name, as_attachment=False)
 

@@ -12,51 +12,67 @@
       <h1>Review mapping</h1>
       <p class="sub">File: <strong>{{ filename }}</strong></p>
       {% if error %}<div class="error">{{ error }}</div>{% endif %}
-      <form action="/run" method="post" class="mapping-grid">
+      <form action="/run" method="post" class="mapping-stack">
         <input type="hidden" name="job_id" value="{{ job_id }}">
         <input type="hidden" name="filename" value="{{ filename }}">
 
         <div class="card inner">
-          <h2>Target</h2>
+          <h2>Outcome</h2>
           <select name="target_column" required>
             {% for col in numeric_columns %}
             <option value="{{ col }}" {% if col == inferred_target %}selected{% endif %}>{{ col }}</option>
             {% endfor %}
           </select>
-
-          <h2>Respondent ID</h2>
-          <select name="respondent_id_column">
-            <option value="">None</option>
-            {% for col in columns %}
-            <option value="{{ col }}">{{ col }}</option>
-            {% endfor %}
-          </select>
+          <input type="text" name="display_name__{{ inferred_target }}" placeholder="Outcome display name in report" value="{{ inferred_target.replace('_', ' ').title() if inferred_target else '' }}">
         </div>
 
         <div class="card inner">
-          <h2>Predictors</h2>
-          <div class="checklist">
+          <div class="section-head">
+            <div>
+              <h2>Predictors</h2>
+              <p class="sub small">Select only the columns you want included in the model.</p>
+            </div>
+          </div>
+          <div class="predictor-grid">
             {% for col in numeric_columns %}
-            <label><input type="checkbox" name="predictor_columns" value="{{ col }}" {% if col in inferred_predictors %}checked{% endif %}> {{ col }}</label>
+            {% if col != inferred_target %}
+            <div class="predictor-row">
+              <label class="predictor-main">
+                <input type="checkbox" name="predictor_columns" value="{{ col }}" {% if col in inferred_predictors %}checked{% endif %}>
+                <span class="mono">{{ col }}</span>
+              </label>
+              <input type="text" name="display_name__{{ col }}" placeholder="Display name in report" value="{{ col.replace('_', ' ').title() }}">
+            </div>
+            {% endif %}
             {% endfor %}
           </div>
         </div>
 
-        <div class="card inner">
+        <details class="card inner advanced">
+          <summary>Advanced metadata</summary>
+
+          <h2>Respondent ID (optional)</h2>
+          <select name="respondent_id_column">
+            <option value="">None</option>
+            {% for col in id_candidates %}
+            <option value="{{ col }}">{{ col }}</option>
+            {% endfor %}
+          </select>
+
           <h2>Segments</h2>
-          <div class="checklist">
+          <div class="checklist compact">
             {% for col in columns %}
             <label><input type="checkbox" name="segment_columns" value="{{ col }}"> {{ col }}</label>
             {% endfor %}
           </div>
 
           <h2>Exclude from model</h2>
-          <div class="checklist">
+          <div class="checklist compact">
             {% for col in columns %}
             <label><input type="checkbox" name="excluded_columns" value="{{ col }}"> {{ col }}</label>
             {% endfor %}
           </div>
-        </div>
+        </details>
 
         <div class="actions"><button type="submit">Run KDA</button></div>
       </form>
