@@ -131,6 +131,7 @@ def inspect_file():
         numeric_columns=numeric_columns,
         inferred_target=inferred_target,
         inferred_predictors=inferred_predictors,
+        predictor_candidates=_predictor_candidates(df, inferred_target),
     )
 
 
@@ -201,6 +202,22 @@ def run_job():
         filename=filename,
         payload=payload,
         logs=result.stdout,
+        preview_images=preview_images,
+    )
+
+
+@app.get("/artifacts/<job_id>/<path:name>")
+@basic_auth
+def artifacts(job_id: str, name: str):
+    return send_from_directory(_job_dir(job_id), name, as_attachment=False)
+
+
+if __name__ == "__main__":
+    host = os.environ.get("TUNDRALIS_HOST", "127.0.0.1")
+    port = int(os.environ.get("TUNDRALIS_PORT", "7860"))
+    app.run(host=host, port=port, debug=False)
+se)
+=result.stdout,
         preview_images=preview_images,
     )
 

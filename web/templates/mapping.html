@@ -38,23 +38,27 @@
           <div class="section-head block">
             <div>
               <h2>Predictor package</h2>
-              <p class="sub small">Build the set of predictors you want included in the KDA.</p>
+              <p class="sub small">Start empty. Add the variables you actually want in the model.</p>
             </div>
+          </div>
+
+          <div class="picker-toolbar">
+            <button type="button" class="button-link secondary js-select-all">Select all</button>
+            <button type="button" class="button-link secondary js-clear-all">Clear all</button>
           </div>
 
           <div class="field-grid two predictor-package-layout">
             <div>
-              <label class="field-label">Available numeric columns</label>
+              <label class="field-label">Available columns</label>
               <div class="picker-card">
                 <input type="text" id="predictorSearch" class="search-input" placeholder="Filter columns...">
                 <div class="picker-list" id="predictorPicker">
-                  {% for col in numeric_columns %}
-                  {% if col != inferred_target %}
-                  <label class="picker-item" data-col="{{ col|lower }}">
-                    <input type="checkbox" name="predictor_columns" value="{{ col }}" {% if col in inferred_predictors %}checked{% endif %}>
-                    <span class="mono">{{ col }}</span>
+                  {% for item in predictor_candidates %}
+                  <label class="picker-item" data-col="{{ item.name|lower }}">
+                    <input type="checkbox" name="predictor_columns" value="{{ item.name }}" {% if item.name in inferred_predictors %}checked{% endif %}>
+                    <span class="mono">{{ item.name }}</span>
+                    <span class="pill {{ item.kind }}">{{ item.kind }}</span>
                   </label>
-                  {% endif %}
                   {% endfor %}
                 </div>
               </div>
@@ -63,16 +67,18 @@
             <div>
               <label class="field-label">Selected predictor package</label>
               <div class="selected-package" id="selectedPredictorPackage">
-                {% for col in numeric_columns %}
-                {% if col != inferred_target %}
-                <div class="selected-item {% if col not in inferred_predictors %}hidden{% endif %}" data-selected-item="{{ col }}">
+                {% for item in predictor_candidates %}
+                <div class="selected-item {% if item.name not in inferred_predictors %}hidden{% endif %}" data-selected-item="{{ item.name }}">
                   <div class="selected-item-head">
-                    <span class="mono">{{ col }}</span>
+                    <span class="mono">{{ item.name }}</span>
+                    <span class="pill {{ item.kind }}">{{ item.kind }}</span>
                   </div>
                   <label class="field-label small">Display name in report</label>
-                  <input type="text" name="display_name__{{ col }}" placeholder="Optional display label" value="{{ col }}">
+                  <input type="text" name="display_name__{{ item.name }}" placeholder="Optional display label" value="{{ item.name }}">
+                  {% if item.kind != 'numeric' %}
+                  <div class="segment-builder-note">This column is non-numeric. Next step: recode or dummy-code it before modeling.</div>
+                  {% endif %}
                 </div>
-                {% endif %}
                 {% endfor %}
                 <div class="empty-state" id="predictorEmptyState">No predictors selected yet.</div>
               </div>
@@ -104,7 +110,6 @@
   <script>
     const searchInput = document.getElementById('predictorSearch');
     const pickerItems = Array.from(document.querySelectorAll('.picker-item[data-col]'));
-    const selectedItems = Array.from(document.querySelectorAll('[data-selected-item]'));
     const emptyState = document.getElementById('predictorEmptyState');
 
     function refreshSelectedPackage() {
@@ -121,13 +126,21 @@
           selected.classList.add('hidden');
         }
       });
-      if (visibleCount === 0) emptyState.classList.remove('hidden');
-      else emptyState.classList.add('hidden');
+      emptyState.classList.toggle('hidden', visibleCount !== 0);
     }
 
     pickerItems.forEach((item) => {
-      const checkbox = item.querySelector('input[type="checkbox"]');
-      checkbox.addEventListener('change', refreshSelectedPackage);
+      item.querySelector('input[type="checkbox"]').addEventListener('change', refreshSelectedPackage);
+    });
+
+    document.querySelector('.js-select-all')?.addEventListener('click', () => {
+      pickerItems.forEach((item) => { item.querySelector('input[type="checkbox"]').checked = true; });
+      refreshSelectedPackage();
+    });
+
+    document.querySelector('.js-clear-all')?.addEventListener('click', () => {
+      pickerItems.forEach((item) => { item.querySelector('input[type="checkbox"]').checked = false; });
+      refreshSelectedPackage();
     });
 
     searchInput?.addEventListener('input', (e) => {
