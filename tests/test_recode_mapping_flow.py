@@ -68,6 +68,7 @@ class TestRecodeMappingFlow(unittest.TestCase):
         payload = json.loads(json_path.read_text())
         self.assertEqual(payload["input_summary"]["segment_columns"], ["segment_group"])
         self.assertEqual(len(payload["input_summary"]["recode_definitions"]), 2)
+        self.assertIn("segment_previews", payload["input_summary"])
         self.assertTrue(json_path.exists())
         self.assertTrue(pptx_path.exists())
 

@@ -24,6 +24,35 @@
         {% endfor %}
       </ol>
 
+      {% if payload.input_summary.segment_previews %}
+      <h2>Segment previews</h2>
+      <div class="selected-package">
+        {% for segment in payload.input_summary.segment_previews %}
+        <div class="selected-item">
+          <div class="selected-item-head">
+            <strong>{{ segment.name }}</strong>
+            <span>{{ segment.matched_count }} rows · {{ '%.1f'|format(segment.matched_pct) }}%</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if payload.segment_summaries %}
+      <h2>Segment summaries</h2>
+      <div class="selected-package">
+        {% for segment in payload.segment_summaries %}
+        <div class="selected-item">
+          <div class="selected-item-head">
+            <strong>{{ segment.name }}</strong>
+            <span>N={{ segment.rows_modeled }} · R²={{ '%.3f'|format(segment.r_squared) }}</span>
+          </div>
+          <div class="sub small">Top drivers: {{ segment.top_drivers|join(', ') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
       <h2>Preview charts</h2>
       <div class="preview-grid">
         {% for image in preview_images %}

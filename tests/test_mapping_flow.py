@@ -29,6 +29,7 @@ class TestMappingFlow(unittest.TestCase):
         self.assertEqual(payload["input_summary"]["target_column"], "overall_sat")
         self.assertEqual(len(payload["input_summary"]["segment_columns"]), 2)
         self.assertEqual(len(payload["drivers"]), 10)
+        self.assertIn("segment_summaries", payload)
         self.assertGreater(payload["input_summary"]["rows_with_valid_dv_and_any_predictor"], 0)
 
 

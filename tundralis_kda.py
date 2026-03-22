@@ -33,6 +33,7 @@ from tundralis.ingestion import (
 from tundralis.analysis import run_kda
 from tundralis.narratives import NarrativeEngine
 from tundralis.payload import build_analysis_run_payload
+from tundralis.segments import evaluate_segment_tree, normalize_segment_definitions, preview_segments
 from tundralis.transforms import apply_recode_transforms
 from tundralis.charts import (
     chart_importance_bar,
@@ -94,6 +95,8 @@ def main(argv=None):
     mapping = load_mapping_config(args.mapping_config)
     recode_definitions = mapping.get("recode_definitions", [])
     df = apply_recode_transforms(raw_df, recode_definitions)
+    normalized_segment_definitions = normalize_segment_definitions(mapping.get("segment_definitions", []), df)
+    segment_previews = preview_segments(df, normalized_segment_definitions)
     config = resolve_config(df, args, mapping)
     validate_resolved_config(df, config)
     validation_summary = build_validation_summary(df, config)
@@ -148,10 +151,49 @@ def main(argv=None):
         recommendations=recommendations,
         display_name_map=mapping.get("display_name_map", {}),
     )
+
+    segment_summaries = []
+    for segment in segment_previews:
+        mask = evaluate_segment_tree(segment["tree"], df).fillna(False)
+        segment_df = df.loc[mask].copy()
+        if segment_df.empty or len(segment_df) < 8:
+            segment_summaries.append({
+                "name": segment["name"],
+                "matched_count": segment["matched_count"],
+                "matched_pct": segment["matched_pct"],
+                "rows_modeled": 0,
+                "r_squared": 0.0,
+                "top_drivers": [],
+            })
+            continue
+        try:
+            _, seg_X, seg_y, _, _ = prepare_sparse_model_data(segment_df, config.target_column, config.predictor_columns)
+            seg_results = run_kda(seg_X, seg_y, target_name=config.target_column)
+            top_drivers = seg_results.importance.ranking.head(3)["predictor"].tolist()
+            segment_summaries.append({
+                "name": segment["name"],
+                "matched_count": segment["matched_count"],
+                "matched_pct": segment["matched_pct"],
+                "rows_modeled": int(len(seg_y)),
+                "r_squared": float(seg_results.regression.r_squared),
+                "top_drivers": top_drivers,
+            })
+        except Exception:
+            segment_summaries.append({
+                "name": segment["name"],
+                "matched_count": segment["matched_count"],
+                "matched_pct": segment["matched_pct"],
+                "rows_modeled": 0,
+                "r_squared": 0.0,
+                "top_drivers": [],
+            })
     payload["run_info"]["version"] = __version__
     payload["input_summary"]["weight_column"] = config.weight_column
     payload["input_summary"]["segment_columns"] = config.segment_columns or []
+    payload["input_summary"]["segment_definitions"] = normalized_segment_definitions
+    payload["input_summary"]["segment_previews"] = segment_previews
     payload["input_summary"]["recode_definitions"] = recode_definitions
+    payload["segment_summaries"] = segment_summaries
 
     builder = PayloadReportBuilder(payload, charts)
     builder.build()

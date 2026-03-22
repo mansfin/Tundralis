@@ -178,7 +178,7 @@
 
             <div class="card inner">
               <h2>Segments</h2>
-              <p class="sub small">Create named segments with simple rule groups.</p>
+              <p class="sub small">Create named segments against the transformed working dataframe. Supports saved simple rules or an advanced nested all/any tree.</p>
 
               <div class="field-grid two">
                 <div>
@@ -221,13 +221,7 @@
                       </div>
                       <div>
                         <label class="field-label small">Operator</label>
-                        <select id="segmentRuleOperator">
-                          <option value="equals">equals</option>
-                          <option value="in">in list</option>
-                          <option value="gt">&gt;</option>
-                          <option value="lt">&lt;</option>
-                          <option value="contains">contains</option>
-                        </select>
+                        <select id="segmentRuleOperator"></select>
                       </div>
                       <div>
                         <label class="field-label small">Value</label>
@@ -237,10 +231,18 @@
 
                     <div class="picker-toolbar">
                       <button type="button" class="button-link secondary" id="addSegmentRule">Add rule</button>
-                      <button type="button" class="button-link secondary" id="saveSegmentDefinition">Save segment</button>
+                      <button type="button" class="button-link secondary" id="saveSegmentDefinition">Save simple segment</button>
+                    </div>
+
+                    <label class="field-label small">Advanced nested tree JSON</label>
+                    <textarea id="segmentTreeJson" rows="7" placeholder='Optional. Example: {"all":[{"column":"segment","operator":"equals","value":"Enterprise"},{"any":[{"column":"region","operator":"equals","value":"APAC"},{"column":"overall_sat","operator":"gte","value":6}]}]}'></textarea>
+                    <div class="picker-toolbar">
+                      <button type="button" class="button-link secondary" id="saveAdvancedSegmentDefinition">Save advanced segment</button>
+                      <button type="button" class="button-link secondary" id="refreshPrepPreview">Refresh previews</button>
                     </div>
 
                     <div class="selected-package" id="segmentRuleDraft"></div>
+                    <div class="selected-package" id="segmentPreviewList"></div>
                     <div class="selected-package" id="savedSegments"></div>
                   </div>
                 </div>
@@ -295,7 +297,7 @@
     </section>
   </main>
   <script>
-    const columnProfiles = {{ column_profiles | tojson }};
+    let columnProfiles = {{ column_profiles | tojson }};
     const searchInput = document.getElementById('predictorSearch');
     const pickerItems = Array.from(document.querySelectorAll('.picker-item[data-col]'));
     const emptyState = document.getElementById('predictorEmptyState');
@@ -303,6 +305,7 @@
     const recodeDefinitionsInput = document.getElementById('recodeDefinitionsInput');
     const segmentRuleDraft = document.getElementById('segmentRuleDraft');
     const savedSegments = document.getElementById('savedSegments');
+    const segmentPreviewList = document.getElementById('segmentPreviewList');
     const segmentName = document.getElementById('segmentName');
     const segmentLogic = document.getElementById('segmentLogic');
     const segmentRuleColumn = document.getElementById('segmentRuleColumn');
@@ -326,7 +329,8 @@
     const flagFalseValue = document.getElementById('flagFalseValue');
     const savedRecodes = document.getElementById('savedRecodes');
     let draftRules = [];
-    let savedSegmentDefs = [];
+    let savedSegmentDefs = {{ normalized_segment_definitions | default([], true) | tojson }};
+    let segmentPreviewsState = {{ segment_previews | default([], true) | tojson }};
     let savedRecodesState = [];
     let draftMapRules = [];
     let draftBucketRules = [];
@@ -348,12 +352,29 @@
       emptyState.classList.toggle('hidden', visibleCount !== 0);
     }
 
+    function operatorOptionsForColumn(columnName) {
+      const inferredType = columnProfiles[columnName]?.inferred_type || 'categorical';
+      if (inferredType.includes('numeric')) {
+        return ['equals', 'not_equals', 'in', 'gt', 'gte', 'lt', 'lte', 'is_null', 'not_null'];
+      }
+      return ['equals', 'not_equals', 'in', 'contains', 'is_null', 'not_null'];
+    }
+
+    function syncSegmentOperatorOptions(columnName) {
+      const current = segmentRuleOperator.value;
+      const options = operatorOptionsForColumn(columnName);
+      segmentRuleOperator.innerHTML = options.map((option) => `<option value="${option}">${option}</option>`).join('');
+      if (options.includes(current)) {
+        segmentRuleOperator.value = current;
+      }
+    }
+
     function renderDraftRules() {
       segmentRuleDraft.innerHTML = draftRules.length ? '' : '<div class="empty-state">No draft rules yet.</div>';
       draftRules.forEach((rule, idx) => {
         const el = document.createElement('div');
         el.className = 'selected-item';
-        el.innerHTML = `<div class="selected-item-head"><span>${rule.column} ${rule.operator} ${rule.value}</span><button type="button" class="button-link secondary" data-remove-rule="${idx}">Remove</button></div>`;
+        el.innerHTML = `<div class="selected-item-head"><span>${rule.column} ${rule.operator}${rule.value !== undefined ? ` ${rule.value}` : ''}</span><button type="button" class="button-link secondary" data-remove-rule="${idx}">Remove</button></div>`;
         segmentRuleDraft.appendChild(el);
       });
       document.querySelectorAll('[data-remove-rule]').forEach((btn) => {
@@ -369,9 +390,10 @@
       savedSegmentDefs.forEach((seg, idx) => {
         const el = document.createElement('div');
         el.className = 'selected-item';
-        el.innerHTML = `<div class="selected-item-head"><span>${seg.name} (${seg.logic})</span><button type="button" class="button-link secondary" data-remove-segment="${idx}">Remove</button></div><div>${seg.rules.map(r => `${r.column} ${r.operator} ${r.value}`).join('<br>')}</div>`;
+        el.innerHTML = `<div class="selected-item-head"><span>${seg.name}</span><button type="button" class="button-link secondary" data-remove-segment="${idx}">Remove</button></div><pre>${JSON.stringify(seg.tree, null, 2)}</pre>`;
         savedSegments.appendChild(el);
       });
+      segmentDefinitionsInput.value = JSON.stringify(savedSegmentDefs);
       document.querySelectorAll('[data-remove-segment]').forEach((btn) => {
         btn.addEventListener('click', () => {
           savedSegmentDefs.splice(Number(btn.dataset.removeSegment), 1);
@@ -413,6 +435,35 @@
           renderBucketDraft();
         });
       });
+    }
+
+    function renderSegmentPreviews() {
+      segmentPreviewList.innerHTML = segmentPreviewsState.length ? '' : '<div class="empty-state">No segment previews yet.</div>';
+      segmentPreviewsState.forEach((segment) => {
+        const el = document.createElement('div');
+        el.className = 'selected-item';
+        el.innerHTML = `<div class="selected-item-head"><span>${segment.name}</span><span>${segment.matched_count} rows · ${segment.matched_pct}%</span></div>`;
+        segmentPreviewList.appendChild(el);
+      });
+    }
+
+    async function refreshPrepPreview() {
+      const response = await fetch('/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_id: document.querySelector('input[name="job_id"]').value,
+          filename: document.querySelector('input[name="filename"]').value,
+          recode_definitions: savedRecodesState,
+          segment_definitions: savedSegmentDefs,
+        }),
+      });
+      if (!response.ok) return;
+      const payload = await response.json();
+      columnProfiles = payload.column_profiles || columnProfiles;
+      segmentPreviewsState = payload.segment_previews || [];
+      renderSegmentPreviews();
+      renderInspector(inspectorColumnSelect.value || targetColumnSelect.value);
     }
 
     function renderSavedRecodes() {
@@ -558,7 +609,7 @@
       renderBucketDraft();
     });
 
-    document.getElementById('saveRecodeDefinition')?.addEventListener('click', () => {
+    document.getElementById('saveRecodeDefinition')?.addEventListener('click', async () => {
       const type = recodeType.value;
       const source_column = recodeSourceColumn.value;
       const output_column = recodeOutputColumn.value.trim();
@@ -596,40 +647,72 @@
       renderMapDraft();
       renderBucketDraft();
       renderSavedRecodes();
+      await refreshPrepPreview();
     });
 
     document.getElementById('addSegmentRule')?.addEventListener('click', () => {
+      const operator = segmentRuleOperator.value;
       const value = segmentRuleValue.value.trim();
-      if (!value) return;
-      draftRules.push({ column: segmentRuleColumn.value, operator: segmentRuleOperator.value, value });
+      const inferredType = columnProfiles[segmentRuleColumn.value]?.inferred_type || 'categorical';
+      const rule = { column: segmentRuleColumn.value, operator, value_type: inferredType.includes('numeric') ? 'numeric' : 'categorical' };
+      if (!['is_null', 'not_null'].includes(operator)) {
+        if (!value) return;
+        rule.value = value;
+      }
+      draftRules.push(rule);
       segmentRuleValue.value = '';
       renderDraftRules();
       renderInspector(segmentRuleColumn.value);
     });
 
-    document.getElementById('saveSegmentDefinition')?.addEventListener('click', () => {
+    document.getElementById('saveSegmentDefinition')?.addEventListener('click', async () => {
       const name = segmentName.value.trim();
       if (!name || draftRules.length === 0) return;
-      savedSegmentDefs.push({ name, logic: segmentLogic.value, rules: [...draftRules] });
-      segmentDefinitionsInput.value = JSON.stringify(savedSegmentDefs);
+      const key = segmentLogic.value === 'OR' ? 'any' : 'all';
+      savedSegmentDefs.push({ name, tree: { [key]: [...draftRules] } });
       segmentName.value = '';
       draftRules = [];
       renderDraftRules();
       renderSavedSegments();
+      await refreshPrepPreview();
     });
+
+    document.getElementById('saveAdvancedSegmentDefinition')?.addEventListener('click', async () => {
+      const name = segmentName.value.trim();
+      const raw = document.getElementById('segmentTreeJson').value.trim();
+      if (!name || !raw) return;
+      let tree;
+      try {
+        tree = JSON.parse(raw);
+      } catch (error) {
+        return;
+      }
+      savedSegmentDefs.push({ name, tree });
+      document.getElementById('segmentTreeJson').value = '';
+      segmentName.value = '';
+      renderSavedSegments();
+      await refreshPrepPreview();
+    });
+
+    document.getElementById('refreshPrepPreview')?.addEventListener('click', refreshPrepPreview);
 
     recodeType?.addEventListener('change', (e) => setRecodePanel(e.target.value));
     recodeSourceColumn?.addEventListener('change', (e) => renderInspector(e.target.value));
     inspectorColumnSelect?.addEventListener('change', (e) => renderInspector(e.target.value));
     targetColumnSelect?.addEventListener('change', (e) => renderInspector(e.target.value));
-    segmentRuleColumn?.addEventListener('change', (e) => renderInspector(e.target.value));
+    segmentRuleColumn?.addEventListener('change', (e) => {
+      syncSegmentOperatorOptions(e.target.value);
+      renderInspector(e.target.value);
+    });
 
     refreshSelectedPackage();
     renderDraftRules();
     renderSavedSegments();
+    renderSegmentPreviews();
     renderMapDraft();
     renderBucketDraft();
     renderSavedRecodes();
+    syncSegmentOperatorOptions(segmentRuleColumn.value);
     setRecodePanel(recodeType.value);
     renderInspector(inspectorColumnSelect.value || targetColumnSelect.value);
   </script>

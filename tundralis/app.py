@@ -8,14 +8,13 @@ import uuid
 from functools import wraps
 from pathlib import Path
 
-from flask import Flask, Response, abort, render_template, request, send_from_directory
+from flask import Flask, Response, abort, jsonify, render_template, request, send_from_directory
 
 from tundralis.analysis import run_kda
 from tundralis.charts import chart_importance_bar, chart_model_fit, chart_quadrant
-from tundralis.ingestion import infer_predictors, load_mapping_config, resolve_config, validate_resolved_config
-from tundralis.profiling import profile_dataframe
-from tundralis.transforms import apply_recode_transforms
-from tundralis.utils import load_survey_data, prepare_sparse_model_data
+from tundralis.ingestion import load_mapping_config, resolve_config, validate_resolved_config
+from tundralis.prep import build_prep_bundle
+from tundralis.utils import prepare_sparse_model_data
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_DIR = ROOT / "app_runtime"
@@ -26,6 +25,11 @@ for p in [UPLOAD_DIR, MAPPING_DIR, ARTIFACT_DIR]:
     p.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__, template_folder=str(ROOT / "web" / "templates"), static_folder=str(ROOT / "web" / "static"))
+
+
+class Args:
+    target = None
+    predictors = None
 
 
 def _auth_ok() -> bool:
@@ -63,28 +67,11 @@ def _job_dir(job_id: str) -> Path:
     return p
 
 
-def _write_preview_charts(job_id: str, data_path: Path, mapping_path: Path) -> list[str]:
-    df = load_survey_data(data_path)
-
-    class Args:
-        target = None
-        predictors = None
-
-    mapping = load_mapping_config(mapping_path)
-    config = resolve_config(df, Args(), mapping)
-    validate_resolved_config(df, config)
-    _, X, y, _, _ = prepare_sparse_model_data(df, config.target_column, config.predictor_columns)
-    results = run_kda(X, y, target_name=config.target_column)
-
-    previews = {
-        "importance_bar.png": chart_importance_bar(results.importance.ranking),
-        "priority_matrix.png": chart_quadrant(results.quadrants.quadrant_df),
-        "model_fit.png": chart_model_fit(results.meta["r_squared"], results.meta["adj_r_squared"]),
-    }
-    out = _job_dir(job_id)
-    for name, content in previews.items():
-        (out / name).write_bytes(content)
-    return list(previews.keys())
+def _parse_json_field(value: str | None) -> list[dict]:
+    try:
+        return json.loads(value) if value else []
+    except json.JSONDecodeError:
+        return []
 
 
 def _detect_target(columns: list[str], numeric_columns: list[str]) -> str | None:
@@ -93,10 +80,6 @@ def _detect_target(columns: list[str], numeric_columns: list[str]) -> str | None
     if inferred_target is None and numeric_columns:
         inferred_target = next((c for c in numeric_columns if "overall" in c.lower() or "satisfaction" in c.lower()), numeric_columns[0])
     return inferred_target
-
-
-def _suggested_predictors(df, inferred_target: str | None) -> list[str]:
-    return []
 
 
 def _predictor_candidates(df, inferred_target: str | None) -> list[dict]:
@@ -111,6 +94,54 @@ def _predictor_candidates(df, inferred_target: str | None) -> list[dict]:
         kind = "numeric" if col in numeric_cols else "categorical"
         candidates.append({"name": col, "kind": kind})
     return candidates
+
+
+def _mapping_context(filename: str, *, job_id: str, recode_definitions: list[dict] | None = None, segment_definitions: list[dict] | None = None) -> dict:
+    bundle = build_prep_bundle(
+        UPLOAD_DIR / filename,
+        recode_definitions=recode_definitions or [],
+        segment_definitions=segment_definitions or [],
+    )
+    df = bundle.working_df
+    columns = list(df.columns)
+    numeric_columns = df.select_dtypes(include="number").columns.tolist()
+    inferred_target = _detect_target(columns, numeric_columns)
+    return {
+        "job_id": job_id,
+        "filename": filename,
+        "columns": columns,
+        "numeric_columns": numeric_columns,
+        "inferred_target": inferred_target,
+        "inferred_predictors": [],
+        "predictor_candidates": _predictor_candidates(df, inferred_target),
+        "column_profiles": bundle.column_profiles,
+        "segment_previews": bundle.segment_previews,
+        "normalized_segment_definitions": bundle.normalized_segments,
+    }
+
+
+def _write_preview_charts(job_id: str, data_path: Path, mapping_path: Path) -> list[str]:
+    mapping = load_mapping_config(mapping_path)
+    bundle = build_prep_bundle(
+        data_path,
+        recode_definitions=mapping.get("recode_definitions", []),
+        segment_definitions=mapping.get("segment_definitions", []),
+    )
+    df = bundle.working_df
+    config = resolve_config(df, Args(), mapping)
+    validate_resolved_config(df, config)
+    _, X, y, _, _ = prepare_sparse_model_data(df, config.target_column, config.predictor_columns)
+    results = run_kda(X, y, target_name=config.target_column)
+
+    previews = {
+        "importance_bar.png": chart_importance_bar(results.importance.ranking),
+        "priority_matrix.png": chart_quadrant(results.quadrants.quadrant_df),
+        "model_fit.png": chart_model_fit(results.meta["r_squared"], results.meta["adj_r_squared"]),
+    }
+    out = _job_dir(job_id)
+    for name, content in previews.items():
+        (out / name).write_bytes(content)
+    return list(previews.keys())
 
 
 @app.get("/")
@@ -129,24 +160,31 @@ def inspect_file():
     job_id = uuid.uuid4().hex[:12]
     upload_path = UPLOAD_DIR / f"{job_id}_{Path(f.filename).name}"
     f.save(upload_path)
+    return render_template("mapping.html", **_mapping_context(upload_path.name, job_id=job_id))
 
-    df = load_survey_data(upload_path)
-    columns = list(df.columns)
-    numeric_columns = df.select_dtypes(include="number").columns.tolist()
-    inferred_target = _detect_target(columns, numeric_columns)
-    inferred_predictors = _suggested_predictors(df, inferred_target)
-    column_profiles = profile_dataframe(df)
 
-    return render_template(
-        "mapping.html",
+@app.post("/preview")
+@basic_auth
+def preview_mapping():
+    payload = request.get_json(silent=True) or {}
+    filename = payload.get("filename")
+    job_id = payload.get("job_id") or uuid.uuid4().hex[:12]
+    if not filename:
+        abort(400)
+    context = _mapping_context(
+        filename,
         job_id=job_id,
-        filename=upload_path.name,
-        columns=columns,
-        numeric_columns=numeric_columns,
-        inferred_target=inferred_target,
-        inferred_predictors=inferred_predictors,
-        predictor_candidates=_predictor_candidates(df, inferred_target),
-        column_profiles=column_profiles,
+        recode_definitions=payload.get("recode_definitions", []),
+        segment_definitions=payload.get("segment_definitions", []),
+    )
+    return jsonify(
+        {
+            "columns": context["columns"],
+            "numeric_columns": context["numeric_columns"],
+            "column_profiles": context["column_profiles"],
+            "segment_previews": context["segment_previews"],
+            "normalized_segment_definitions": context["normalized_segment_definitions"],
+        }
     )
 
 
@@ -168,22 +206,25 @@ def run_job():
         if key.startswith("display_name__") and value.strip():
             display_name_map[key.split("display_name__", 1)[1]] = value.strip()
 
-    segment_definitions_raw = request.form.get("segment_definitions")
-    try:
-        segment_definitions = json.loads(segment_definitions_raw) if segment_definitions_raw else []
-    except json.JSONDecodeError:
-        segment_definitions = []
+    segment_definitions = _parse_json_field(request.form.get("segment_definitions"))
+    recode_definitions = _parse_json_field(request.form.get("recode_definitions"))
 
-    recode_definitions_raw = request.form.get("recode_definitions")
     try:
-        recode_definitions = json.loads(recode_definitions_raw) if recode_definitions_raw else []
-    except json.JSONDecodeError:
-        recode_definitions = []
+        context = _mapping_context(
+            filename,
+            job_id=job_id,
+            recode_definitions=recode_definitions,
+            segment_definitions=segment_definitions,
+        )
+        normalized_segments = context["normalized_segment_definitions"]
+    except ValueError as exc:
+        context = _mapping_context(filename, job_id=job_id)
+        return render_template("mapping.html", error=str(exc), **context), 400
 
     mapping = {
         "target_column": target_column,
         "segment_columns": segment_columns,
-        "segment_definitions": segment_definitions,
+        "segment_definitions": normalized_segments,
         "recode_definitions": recode_definitions,
         "predictor_columns": predictors,
         "display_name_map": display_name_map,
@@ -207,28 +248,17 @@ def run_job():
     result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
 
     if result.returncode != 0:
-        df = load_survey_data(data_path)
-        columns = list(df.columns)
-        numeric_columns = df.select_dtypes(include="number").columns.tolist()
-        inferred_target = _detect_target(columns, numeric_columns)
-        inferred_predictors = _suggested_predictors(df, inferred_target)
-        column_profiles = profile_dataframe(df)
         return render_template(
             "mapping.html",
             error=result.stderr or result.stdout or "Run failed.",
-            job_id=job_id,
-            filename=filename,
-            columns=columns,
-            numeric_columns=numeric_columns,
-            inferred_target=inferred_target,
-            inferred_predictors=inferred_predictors,
-            predictor_candidates=_predictor_candidates(df, inferred_target),
-            column_profiles=column_profiles,
+            **context,
         ), 500
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    payload.setdefault("input_summary", {})["segment_definitions"] = segment_definitions
+    payload.setdefault("input_summary", {})["segment_definitions"] = normalized_segments
+    payload.setdefault("input_summary", {})["segment_previews"] = context["segment_previews"]
     payload.setdefault("input_summary", {})["recode_definitions"] = recode_definitions
+    payload.setdefault("segment_summaries", payload.get("segment_summaries", []))
     json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     preview_images = _write_preview_charts(job_id, data_path, mapping_path)
     return render_template(

@@ -186,6 +186,19 @@ class PayloadReportBuilder:
             self._add_textbox(slide, str(i + 1), Inches(0.35), y + Inches(0.08), Inches(0.4), Inches(0.4), font_size=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
             self._add_textbox(slide, rec['rationale'], Inches(0.9), y, Inches(12.0), Inches(0.8), font_size=11, color=DARK_BLUE)
 
+    def _slide_segments(self):
+        segments = self.payload.get('segment_summaries', [])[:6]
+        if not segments:
+            return
+        slide = self._blank_slide()
+        self._header_bar(slide, "Segment Readout", "How saved segments break down in the working dataframe")
+        for i, segment in enumerate(segments):
+            y = Inches(1.35) + i * Inches(0.9)
+            self._add_rect(slide, Inches(0.4), y, Inches(12.3), Inches(0.72), LIGHT_GRAY if i % 2 == 0 else WHITE)
+            self._add_textbox(slide, segment['name'], Inches(0.65), y + Inches(0.08), Inches(3.2), Inches(0.25), font_size=12, bold=True, color=DARK_BLUE)
+            self._add_textbox(slide, f"Rows: {segment['rows_modeled']} · Match rate: {segment['matched_pct']:.1f}% · R²: {segment['r_squared']:.3f}", Inches(0.65), y + Inches(0.34), Inches(4.8), Inches(0.22), font_size=10, color=DARK_BLUE)
+            self._add_textbox(slide, f"Top drivers: {', '.join(segment['top_drivers'])}", Inches(5.4), y + Inches(0.2), Inches(6.7), Inches(0.3), font_size=10, color=DARK_BLUE)
+
     def build(self) -> Presentation:
         logger.info("Building PowerPoint report from analysis payload...")
         self._slide_title()
@@ -194,6 +207,7 @@ class PayloadReportBuilder:
         self._slide_chart("Priority Matrix", "Importance vs performance", "quadrant", width=Inches(8.8), left=Inches(0.5), top=Inches(1.25))
         self._slide_opportunity_table()
         self._slide_confidence()
+        self._slide_segments()
         self._slide_recommendations()
         logger.info("Payload report complete: %d slides", len(self.prs.slides))
         return self.prs
