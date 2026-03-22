@@ -46,6 +46,21 @@ python tundralis_kda.py --data data/sample_survey.csv --target overall_satisfact
 
 Output: `output/overall_satisfaction_kda_report.pptx`
 
+### 4. Run the messy client-style golden path
+
+```bash
+python tundralis_kda.py \
+  --data data/fixtures/client_style_kda.csv \
+  --mapping-config data/fixtures/client_style_kda_mapping.json \
+  --no-ai
+```
+
+This exercises the first real ingestion path:
+- explicit mapping config
+- sparse missing data
+- extra non-model columns
+- segment metadata retained in payload
+
 ### 4. With AI narratives (requires OpenAI key)
 
 ```bash

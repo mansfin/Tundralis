@@ -1,0 +1,501 @@
+response_id,overall_sat,product_quality_score,ease_use_score,support_experience,value_for_money,onboarding_score,service_reliability,mobile_app_score,acct_mgmt_score,reporting_tools,integration_setup,segment,region,survey_wave,free_text_comment
+1,4.0,5.0,4.0,5.0,6.0,5.0,5.0,5.0,6.0,1.0,5.0,Mid-Market,APAC,2026-Q1,
+2,5.0,6.0,6.0,5.0,6.0,7.0,3.0,5.0,5.0,1.0,4.0,SMB,North America,2026-Q1,slow onboarding
+3,4.0,5.0,6.0,3.0,6.0,5.0,7.0,4.0,,4.0,,SMB,EMEA,2026-Q1,love support
+4,4.0,6.0,6.0,4.0,4.0,4.0,6.0,,4.0,4.0,3.0,SMB,APAC,2026-Q1,
+5,4.0,6.0,6.0,5.0,5.0,5.0,6.0,3.0,5.0,1.0,2.0,SMB,North America,2026-Q1,pricing concerns
+6,6.0,7.0,2.0,6.0,3.0,5.0,6.0,3.0,3.0,,4.0,Enterprise,APAC,2026-Q1,slow onboarding
+7,4.0,5.0,6.0,3.0,5.0,3.0,5.0,6.0,5.0,3.0,,Enterprise,North America,2026-Q1,good
+8,3.0,5.0,5.0,2.0,6.0,5.0,6.0,3.0,3.0,,,SMB,North America,2026-Q1,pricing concerns
+9,4.0,6.0,4.0,3.0,4.0,4.0,7.0,3.0,4.0,2.0,4.0,Enterprise,North America,2026-Q1,
+10,5.0,6.0,6.0,3.0,7.0,4.0,5.0,,4.0,3.0,3.0,Enterprise,APAC,2026-Q1,good
+11,5.0,5.0,7.0,4.0,4.0,5.0,4.0,4.0,4.0,3.0,7.0,Mid-Market,North America,2026-Q1,love support
+12,3.0,6.0,2.0,4.0,6.0,2.0,5.0,4.0,2.0,5.0,3.0,SMB,EMEA,2026-Q1,slow onboarding
+13,3.0,7.0,6.0,4.0,3.0,2.0,4.0,3.0,5.0,3.0,,Enterprise,North America,2026-Q1,slow onboarding
+14,5.0,,,3.0,,,,,,,,SMB,EMEA,2026-Q1,
+15,6.0,6.0,6.0,5.0,5.0,3.0,6.0,4.0,3.0,3.0,6.0,Mid-Market,North America,2026-Q1,
+16,4.0,4.0,6.0,1.0,4.0,6.0,3.0,3.0,4.0,2.0,3.0,Mid-Market,APAC,2026-Q1,
+17,3.0,5.0,6.0,4.0,5.0,5.0,3.0,4.0,3.0,,3.0,Enterprise,APAC,2026-Q1,
+18,4.0,5.0,5.0,5.0,4.0,2.0,7.0,3.0,4.0,3.0,4.0,SMB,APAC,2026-Q1,
+19,3.0,6.0,3.0,2.0,5.0,5.0,1.0,3.0,2.0,4.0,7.0,Mid-Market,APAC,2026-Q1,love support
+20,4.0,6.0,3.0,,4.0,2.0,6.0,5.0,5.0,3.0,6.0,Mid-Market,North America,2026-Q1,love support
+21,5.0,6.0,6.0,4.0,3.0,5.0,7.0,,4.0,2.0,4.0,SMB,North America,2026-Q1,
+22,4.0,5.0,5.0,5.0,3.0,3.0,6.0,5.0,4.0,5.0,5.0,SMB,North America,2026-Q1,good
+23,4.0,6.0,3.0,5.0,5.0,2.0,5.0,,2.0,2.0,5.0,Mid-Market,North America,2026-Q1,pricing concerns
+24,5.0,5.0,6.0,5.0,4.0,6.0,6.0,,1.0,,4.0,Mid-Market,North America,2026-Q1,pricing concerns
+25,4.0,6.0,3.0,3.0,5.0,2.0,6.0,6.0,4.0,,3.0,SMB,APAC,2026-Q1,love support
+26,5.0,6.0,4.0,,4.0,3.0,6.0,4.0,6.0,,4.0,SMB,North America,2026-Q1,slow onboarding
+27,2.0,4.0,4.0,3.0,5.0,3.0,4.0,5.0,5.0,3.0,5.0,Mid-Market,North America,2026-Q1,love support
+28,5.0,6.0,5.0,3.0,5.0,3.0,6.0,3.0,,5.0,4.0,Mid-Market,APAC,2026-Q1,love support
+29,4.0,6.0,6.0,2.0,4.0,4.0,5.0,3.0,4.0,,6.0,Enterprise,North America,2026-Q1,slow onboarding
+30,5.0,6.0,3.0,5.0,3.0,2.0,5.0,2.0,2.0,4.0,4.0,Mid-Market,North America,2026-Q1,slow onboarding
+31,4.0,5.0,5.0,6.0,5.0,6.0,6.0,,3.0,4.0,4.0,Enterprise,EMEA,2026-Q1,slow onboarding
+32,4.0,6.0,5.0,,3.0,2.0,5.0,3.0,3.0,5.0,3.0,Enterprise,EMEA,2026-Q1,slow onboarding
+33,4.0,,,,,,,,,6.0,,SMB,North America,2026-Q1,
+34,4.0,4.0,3.0,6.0,4.0,3.0,6.0,4.0,4.0,3.0,5.0,Enterprise,North America,2026-Q1,good
+35,5.0,6.0,5.0,6.0,3.0,3.0,5.0,4.0,3.0,2.0,3.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+36,2.0,5.0,5.0,2.0,4.0,4.0,6.0,4.0,3.0,2.0,6.0,SMB,North America,2026-Q1,slow onboarding
+37,,5.0,4.0,5.0,4.0,4.0,6.0,3.0,5.0,3.0,,Mid-Market,EMEA,2026-Q1,good
+38,3.0,7.0,5.0,1.0,2.0,5.0,5.0,2.0,6.0,5.0,5.0,Enterprise,EMEA,2026-Q1,pricing concerns
+39,3.0,5.0,3.0,2.0,1.0,6.0,6.0,4.0,,1.0,6.0,SMB,EMEA,2026-Q1,good
+40,6.0,6.0,6.0,5.0,3.0,2.0,6.0,1.0,5.0,,5.0,Mid-Market,North America,2026-Q1,
+41,2.0,6.0,5.0,3.0,5.0,5.0,5.0,4.0,5.0,2.0,4.0,SMB,North America,2026-Q1,slow onboarding
+42,5.0,6.0,5.0,,4.0,6.0,6.0,5.0,,5.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+43,,6.0,4.0,5.0,3.0,4.0,6.0,4.0,3.0,4.0,6.0,SMB,EMEA,2026-Q1,love support
+44,1.0,3.0,6.0,1.0,3.0,3.0,4.0,,4.0,3.0,6.0,Mid-Market,EMEA,2026-Q1,good
+45,3.0,4.0,3.0,5.0,6.0,3.0,5.0,4.0,,2.0,6.0,SMB,EMEA,2026-Q1,pricing concerns
+46,5.0,4.0,7.0,4.0,6.0,5.0,5.0,2.0,4.0,3.0,5.0,SMB,APAC,2026-Q1,love support
+47,7.0,6.0,5.0,6.0,5.0,3.0,5.0,5.0,4.0,3.0,2.0,SMB,APAC,2026-Q1,pricing concerns
+48,6.0,7.0,5.0,5.0,6.0,4.0,6.0,6.0,5.0,5.0,6.0,SMB,North America,2026-Q1,good
+49,5.0,4.0,4.0,5.0,3.0,4.0,6.0,3.0,3.0,3.0,5.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+50,3.0,5.0,4.0,4.0,3.0,6.0,3.0,4.0,,2.0,5.0,Mid-Market,EMEA,2026-Q1,good
+51,3.0,7.0,4.0,,2.0,5.0,5.0,3.0,5.0,4.0,4.0,SMB,North America,2026-Q1,pricing concerns
+52,4.0,6.0,4.0,4.0,5.0,6.0,6.0,4.0,5.0,4.0,5.0,SMB,North America,2026-Q1,love support
+53,5.0,6.0,5.0,6.0,5.0,4.0,3.0,2.0,6.0,5.0,5.0,SMB,North America,2026-Q1,good
+54,4.0,6.0,7.0,5.0,2.0,6.0,6.0,,2.0,4.0,5.0,SMB,North America,2026-Q1,pricing concerns
+55,4.0,6.0,3.0,,5.0,2.0,5.0,4.0,3.0,5.0,2.0,Mid-Market,EMEA,2026-Q1,good
+56,3.0,6.0,6.0,5.0,4.0,4.0,4.0,3.0,5.0,3.0,2.0,SMB,EMEA,2026-Q1,slow onboarding
+57,2.0,3.0,4.0,4.0,4.0,4.0,4.0,4.0,2.0,2.0,,Enterprise,North America,2026-Q1,good
+58,4.0,6.0,3.0,3.0,5.0,3.0,4.0,2.0,3.0,2.0,,Mid-Market,North America,2026-Q1,love support
+59,3.0,7.0,4.0,3.0,4.0,5.0,4.0,5.0,5.0,3.0,,SMB,North America,2026-Q1,
+60,4.0,6.0,4.0,3.0,5.0,4.0,6.0,4.0,4.0,,5.0,Enterprise,EMEA,2026-Q1,good
+61,4.0,6.0,3.0,5.0,3.0,3.0,7.0,5.0,3.0,4.0,6.0,Mid-Market,APAC,2026-Q1,pricing concerns
+62,1.0,2.0,5.0,2.0,3.0,4.0,4.0,3.0,5.0,3.0,6.0,Mid-Market,North America,2026-Q1,good
+63,1.0,3.0,7.0,4.0,2.0,2.0,4.0,,5.0,2.0,4.0,Mid-Market,North America,2026-Q1,good
+64,2.0,3.0,5.0,3.0,3.0,4.0,4.0,3.0,4.0,6.0,5.0,SMB,EMEA,2026-Q1,pricing concerns
+65,4.0,4.0,6.0,6.0,5.0,3.0,4.0,6.0,1.0,,,SMB,North America,2026-Q1,slow onboarding
+66,5.0,6.0,5.0,3.0,4.0,6.0,4.0,2.0,4.0,3.0,4.0,SMB,EMEA,2026-Q1,pricing concerns
+67,4.0,5.0,4.0,4.0,3.0,4.0,5.0,3.0,4.0,4.0,5.0,Mid-Market,North America,2026-Q1,love support
+68,4.0,5.0,5.0,4.0,4.0,5.0,4.0,4.0,5.0,1.0,6.0,Mid-Market,EMEA,2026-Q1,pricing concerns
+69,6.0,5.0,5.0,4.0,3.0,3.0,6.0,3.0,5.0,5.0,6.0,Enterprise,North America,2026-Q1,pricing concerns
+70,5.0,7.0,5.0,4.0,4.0,6.0,5.0,3.0,5.0,5.0,4.0,SMB,EMEA,2026-Q1,pricing concerns
+71,2.0,4.0,5.0,2.0,4.0,5.0,3.0,4.0,4.0,4.0,5.0,Mid-Market,EMEA,2026-Q1,love support
+72,4.0,6.0,7.0,2.0,4.0,3.0,6.0,5.0,3.0,2.0,5.0,Mid-Market,EMEA,2026-Q1,pricing concerns
+73,2.0,5.0,4.0,4.0,5.0,4.0,5.0,,3.0,5.0,4.0,SMB,EMEA,2026-Q1,love support
+74,4.0,6.0,5.0,3.0,4.0,5.0,6.0,4.0,4.0,3.0,,Mid-Market,North America,2026-Q1,slow onboarding
+75,4.0,6.0,4.0,4.0,4.0,5.0,4.0,1.0,2.0,4.0,6.0,SMB,North America,2026-Q1,
+76,3.0,6.0,5.0,4.0,3.0,3.0,5.0,4.0,,6.0,5.0,Mid-Market,North America,2026-Q1,good
+77,4.0,6.0,5.0,5.0,3.0,6.0,6.0,1.0,3.0,,5.0,Mid-Market,North America,2026-Q1,slow onboarding
+78,4.0,6.0,7.0,4.0,4.0,3.0,5.0,3.0,3.0,5.0,6.0,Mid-Market,North America,2026-Q1,good
+79,2.0,4.0,2.0,1.0,4.0,2.0,3.0,4.0,4.0,2.0,6.0,SMB,North America,2026-Q1,love support
+80,3.0,6.0,4.0,2.0,3.0,3.0,6.0,4.0,2.0,4.0,4.0,SMB,EMEA,2026-Q1,good
+81,4.0,4.0,2.0,4.0,5.0,7.0,4.0,5.0,4.0,1.0,3.0,SMB,EMEA,2026-Q1,pricing concerns
+82,4.0,5.0,4.0,3.0,2.0,4.0,7.0,4.0,5.0,3.0,5.0,Mid-Market,North America,2026-Q1,good
+83,2.0,5.0,3.0,1.0,5.0,4.0,6.0,4.0,2.0,4.0,3.0,SMB,North America,2026-Q1,slow onboarding
+84,4.0,6.0,3.0,4.0,4.0,4.0,6.0,5.0,3.0,5.0,6.0,Mid-Market,EMEA,2026-Q1,love support
+85,,6.0,5.0,4.0,5.0,4.0,4.0,4.0,,3.0,4.0,SMB,EMEA,2026-Q1,good
+86,3.0,4.0,4.0,4.0,4.0,5.0,7.0,4.0,5.0,3.0,,Enterprise,EMEA,2026-Q1,pricing concerns
+87,4.0,5.0,4.0,5.0,2.0,3.0,2.0,3.0,4.0,4.0,5.0,Enterprise,EMEA,2026-Q1,slow onboarding
+88,4.0,5.0,3.0,4.0,3.0,7.0,6.0,6.0,3.0,4.0,4.0,SMB,APAC,2026-Q1,slow onboarding
+89,2.0,6.0,6.0,1.0,4.0,5.0,4.0,,5.0,,3.0,Enterprise,EMEA,2026-Q1,good
+90,5.0,6.0,4.0,5.0,4.0,2.0,5.0,6.0,3.0,5.0,3.0,SMB,APAC,2026-Q1,love support
+91,4.0,5.0,4.0,2.0,4.0,5.0,4.0,,3.0,5.0,3.0,Enterprise,North America,2026-Q1,good
+92,3.0,7.0,6.0,2.0,4.0,4.0,6.0,4.0,3.0,,5.0,Mid-Market,EMEA,2026-Q1,good
+93,4.0,7.0,3.0,5.0,5.0,5.0,3.0,4.0,3.0,3.0,6.0,Mid-Market,North America,2026-Q1,
+94,,5.0,3.0,5.0,4.0,3.0,5.0,4.0,3.0,2.0,4.0,SMB,North America,2026-Q1,pricing concerns
+95,3.0,4.0,6.0,1.0,4.0,6.0,2.0,3.0,1.0,3.0,5.0,SMB,North America,2026-Q1,good
+96,4.0,4.0,5.0,3.0,5.0,6.0,7.0,4.0,1.0,3.0,3.0,SMB,North America,2026-Q1,slow onboarding
+97,5.0,7.0,6.0,4.0,4.0,3.0,5.0,4.0,3.0,3.0,4.0,SMB,EMEA,2026-Q1,love support
+98,3.0,5.0,6.0,4.0,7.0,4.0,6.0,4.0,3.0,,5.0,Enterprise,North America,2026-Q1,love support
+99,4.0,5.0,6.0,4.0,6.0,5.0,6.0,3.0,3.0,6.0,4.0,SMB,North America,2026-Q1,slow onboarding
+100,3.0,5.0,6.0,3.0,4.0,3.0,5.0,5.0,3.0,3.0,3.0,SMB,North America,2026-Q1,pricing concerns
+101,3.0,5.0,7.0,4.0,2.0,4.0,4.0,4.0,3.0,4.0,4.0,Mid-Market,North America,2026-Q1,good
+102,5.0,5.0,7.0,4.0,4.0,5.0,6.0,3.0,3.0,2.0,3.0,SMB,APAC,2026-Q1,good
+103,6.0,7.0,6.0,6.0,5.0,3.0,6.0,3.0,5.0,4.0,3.0,Enterprise,APAC,2026-Q1,slow onboarding
+104,2.0,3.0,7.0,2.0,3.0,6.0,7.0,,4.0,2.0,4.0,SMB,North America,2026-Q1,
+105,5.0,5.0,5.0,3.0,5.0,4.0,7.0,4.0,5.0,3.0,4.0,SMB,EMEA,2026-Q1,pricing concerns
+106,4.0,6.0,6.0,3.0,3.0,5.0,4.0,3.0,5.0,4.0,6.0,Mid-Market,North America,2026-Q1,slow onboarding
+107,3.0,6.0,5.0,3.0,7.0,4.0,5.0,2.0,3.0,5.0,5.0,Enterprise,North America,2026-Q1,pricing concerns
+108,2.0,5.0,3.0,5.0,4.0,3.0,7.0,3.0,6.0,,5.0,SMB,EMEA,2026-Q1,pricing concerns
+109,4.0,6.0,4.0,3.0,6.0,5.0,6.0,2.0,3.0,4.0,4.0,Mid-Market,North America,2026-Q1,love support
+110,4.0,4.0,4.0,3.0,4.0,3.0,6.0,5.0,4.0,3.0,6.0,SMB,North America,2026-Q1,pricing concerns
+111,3.0,5.0,4.0,,4.0,7.0,5.0,5.0,3.0,4.0,7.0,Mid-Market,North America,2026-Q1,good
+112,5.0,6.0,5.0,6.0,4.0,4.0,5.0,6.0,2.0,5.0,4.0,SMB,North America,2026-Q1,
+113,3.0,4.0,6.0,3.0,2.0,6.0,4.0,2.0,6.0,3.0,4.0,SMB,North America,2026-Q1,good
+114,3.0,6.0,4.0,2.0,3.0,6.0,5.0,4.0,6.0,3.0,4.0,SMB,North America,2026-Q1,love support
+115,3.0,6.0,4.0,3.0,4.0,3.0,4.0,2.0,4.0,4.0,3.0,SMB,North America,2026-Q1,pricing concerns
+116,5.0,6.0,7.0,2.0,5.0,4.0,6.0,3.0,6.0,,7.0,SMB,North America,2026-Q1,good
+117,4.0,7.0,4.0,5.0,5.0,2.0,4.0,6.0,4.0,2.0,6.0,Mid-Market,North America,2026-Q1,love support
+118,4.0,5.0,5.0,4.0,3.0,3.0,6.0,5.0,4.0,4.0,4.0,Mid-Market,North America,2026-Q1,
+119,5.0,6.0,4.0,4.0,5.0,4.0,6.0,1.0,4.0,2.0,3.0,Mid-Market,North America,2026-Q1,love support
+120,3.0,4.0,4.0,2.0,6.0,4.0,4.0,5.0,5.0,4.0,,SMB,North America,2026-Q1,good
+121,3.0,6.0,5.0,3.0,4.0,3.0,6.0,4.0,5.0,2.0,,Enterprise,EMEA,2026-Q1,slow onboarding
+122,3.0,5.0,5.0,4.0,5.0,4.0,4.0,4.0,5.0,5.0,4.0,Mid-Market,EMEA,2026-Q1,
+123,4.0,6.0,4.0,2.0,5.0,4.0,3.0,4.0,4.0,4.0,5.0,Mid-Market,APAC,2026-Q1,good
+124,3.0,5.0,5.0,3.0,2.0,4.0,6.0,3.0,2.0,4.0,7.0,Mid-Market,North America,2026-Q1,good
+125,3.0,6.0,6.0,1.0,3.0,3.0,5.0,5.0,6.0,,2.0,SMB,APAC,2026-Q1,good
+126,6.0,6.0,5.0,3.0,4.0,5.0,6.0,4.0,6.0,5.0,4.0,SMB,APAC,2026-Q1,slow onboarding
+127,1.0,3.0,4.0,4.0,3.0,5.0,6.0,4.0,6.0,4.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+128,2.0,3.0,5.0,2.0,5.0,4.0,6.0,4.0,2.0,1.0,5.0,Mid-Market,North America,2026-Q1,pricing concerns
+129,4.0,6.0,6.0,3.0,5.0,3.0,5.0,,,4.0,4.0,SMB,North America,2026-Q1,pricing concerns
+130,6.0,4.0,5.0,2.0,6.0,7.0,7.0,5.0,4.0,5.0,6.0,SMB,EMEA,2026-Q1,pricing concerns
+131,4.0,6.0,5.0,5.0,3.0,5.0,5.0,,5.0,3.0,5.0,Mid-Market,EMEA,2026-Q1,love support
+132,2.0,4.0,5.0,2.0,4.0,3.0,6.0,3.0,4.0,1.0,4.0,Mid-Market,APAC,2026-Q1,love support
+133,4.0,5.0,5.0,3.0,3.0,4.0,6.0,4.0,4.0,3.0,6.0,SMB,North America,2026-Q1,
+134,5.0,7.0,6.0,4.0,5.0,5.0,5.0,3.0,3.0,3.0,4.0,SMB,North America,2026-Q1,
+135,6.0,7.0,6.0,3.0,6.0,4.0,5.0,,3.0,,5.0,Enterprise,North America,2026-Q1,slow onboarding
+136,4.0,7.0,7.0,3.0,3.0,5.0,6.0,3.0,3.0,2.0,3.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+137,2.0,3.0,3.0,2.0,2.0,2.0,6.0,,3.0,3.0,4.0,SMB,North America,2026-Q1,good
+138,3.0,5.0,6.0,3.0,4.0,4.0,6.0,4.0,,,4.0,Enterprise,North America,2026-Q1,good
+139,5.0,6.0,7.0,,4.0,5.0,5.0,2.0,4.0,4.0,6.0,SMB,North America,2026-Q1,good
+140,6.0,6.0,5.0,6.0,3.0,5.0,6.0,5.0,,2.0,6.0,SMB,APAC,2026-Q1,pricing concerns
+141,3.0,7.0,5.0,5.0,3.0,3.0,3.0,4.0,6.0,3.0,,Enterprise,North America,2026-Q1,good
+142,,5.0,6.0,3.0,4.0,5.0,4.0,4.0,4.0,3.0,4.0,SMB,North America,2026-Q1,pricing concerns
+143,3.0,5.0,5.0,6.0,6.0,5.0,7.0,,1.0,6.0,6.0,Enterprise,North America,2026-Q1,
+144,4.0,5.0,4.0,3.0,2.0,5.0,6.0,4.0,5.0,4.0,2.0,SMB,North America,2026-Q1,pricing concerns
+145,2.0,4.0,5.0,4.0,3.0,4.0,6.0,,4.0,4.0,6.0,SMB,North America,2026-Q1,love support
+146,4.0,4.0,6.0,6.0,5.0,7.0,7.0,3.0,5.0,4.0,4.0,Mid-Market,North America,2026-Q1,pricing concerns
+147,4.0,6.0,5.0,2.0,4.0,3.0,7.0,2.0,4.0,6.0,3.0,Enterprise,North America,2026-Q1,good
+148,5.0,6.0,5.0,3.0,5.0,4.0,6.0,3.0,4.0,4.0,4.0,Mid-Market,EMEA,2026-Q1,love support
+149,5.0,6.0,6.0,3.0,3.0,4.0,5.0,4.0,4.0,5.0,4.0,SMB,EMEA,2026-Q1,love support
+150,6.0,6.0,6.0,4.0,4.0,4.0,6.0,4.0,6.0,2.0,4.0,SMB,EMEA,2026-Q1,love support
+151,4.0,5.0,6.0,4.0,3.0,4.0,4.0,5.0,3.0,3.0,5.0,SMB,North America,2026-Q1,love support
+152,4.0,5.0,3.0,5.0,4.0,3.0,7.0,2.0,4.0,2.0,6.0,SMB,EMEA,2026-Q1,slow onboarding
+153,5.0,6.0,6.0,,3.0,6.0,6.0,1.0,5.0,3.0,,Mid-Market,North America,2026-Q1,pricing concerns
+154,4.0,6.0,5.0,6.0,2.0,7.0,3.0,2.0,3.0,3.0,3.0,SMB,North America,2026-Q1,slow onboarding
+155,6.0,6.0,6.0,4.0,5.0,5.0,3.0,5.0,4.0,4.0,3.0,Mid-Market,North America,2026-Q1,love support
+156,3.0,5.0,,,,,,,,,,Enterprise,North America,2026-Q1,slow onboarding
+157,4.0,5.0,5.0,6.0,6.0,6.0,4.0,3.0,3.0,3.0,6.0,Mid-Market,North America,2026-Q1,
+158,4.0,5.0,4.0,2.0,5.0,4.0,5.0,3.0,2.0,3.0,6.0,SMB,North America,2026-Q1,slow onboarding
+159,5.0,6.0,4.0,2.0,4.0,5.0,6.0,4.0,3.0,4.0,4.0,Enterprise,EMEA,2026-Q1,pricing concerns
+160,3.0,7.0,3.0,3.0,4.0,3.0,6.0,,,3.0,7.0,Enterprise,APAC,2026-Q1,
+161,3.0,5.0,5.0,,4.0,3.0,4.0,2.0,4.0,5.0,6.0,SMB,North America,2026-Q1,pricing concerns
+162,5.0,6.0,6.0,2.0,4.0,4.0,5.0,5.0,3.0,4.0,4.0,Enterprise,EMEA,2026-Q1,good
+163,5.0,6.0,6.0,5.0,4.0,4.0,4.0,4.0,5.0,4.0,,SMB,North America,2026-Q1,
+164,5.0,7.0,4.0,3.0,5.0,5.0,5.0,3.0,5.0,3.0,6.0,SMB,North America,2026-Q1,good
+165,2.0,3.0,6.0,3.0,5.0,5.0,5.0,4.0,3.0,2.0,5.0,SMB,EMEA,2026-Q1,pricing concerns
+166,3.0,5.0,6.0,2.0,3.0,5.0,6.0,5.0,,2.0,3.0,Mid-Market,EMEA,2026-Q1,good
+167,2.0,4.0,5.0,5.0,3.0,4.0,3.0,5.0,4.0,5.0,4.0,SMB,APAC,2026-Q1,pricing concerns
+168,4.0,5.0,5.0,2.0,4.0,4.0,6.0,3.0,5.0,2.0,7.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+169,4.0,7.0,4.0,4.0,5.0,3.0,5.0,3.0,3.0,2.0,3.0,SMB,EMEA,2026-Q1,slow onboarding
+170,3.0,4.0,6.0,2.0,5.0,5.0,5.0,5.0,4.0,4.0,3.0,SMB,North America,2026-Q1,slow onboarding
+171,4.0,4.0,5.0,4.0,4.0,6.0,5.0,4.0,,4.0,5.0,SMB,North America,2026-Q1,good
+172,4.0,7.0,6.0,2.0,3.0,3.0,7.0,5.0,2.0,2.0,4.0,Mid-Market,EMEA,2026-Q1,pricing concerns
+173,3.0,5.0,6.0,4.0,4.0,6.0,3.0,3.0,2.0,3.0,4.0,Mid-Market,North America,2026-Q1,love support
+174,3.0,4.0,6.0,3.0,5.0,5.0,5.0,2.0,,3.0,4.0,SMB,North America,2026-Q1,
+175,3.0,4.0,2.0,3.0,3.0,4.0,5.0,3.0,3.0,5.0,4.0,Enterprise,North America,2026-Q1,pricing concerns
+176,4.0,7.0,6.0,1.0,4.0,4.0,6.0,4.0,3.0,4.0,4.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+177,4.0,5.0,5.0,5.0,3.0,4.0,7.0,5.0,3.0,5.0,3.0,Mid-Market,North America,2026-Q1,
+178,3.0,7.0,3.0,3.0,3.0,4.0,5.0,4.0,4.0,2.0,6.0,Mid-Market,North America,2026-Q1,good
+179,6.0,7.0,5.0,,4.0,5.0,4.0,1.0,5.0,,5.0,Mid-Market,EMEA,2026-Q1,pricing concerns
+180,4.0,6.0,6.0,6.0,3.0,6.0,7.0,,4.0,3.0,3.0,Enterprise,EMEA,2026-Q1,pricing concerns
+181,2.0,5.0,5.0,3.0,1.0,3.0,5.0,3.0,2.0,4.0,5.0,Mid-Market,North America,2026-Q1,good
+182,3.0,4.0,5.0,,3.0,3.0,4.0,3.0,2.0,1.0,4.0,SMB,EMEA,2026-Q1,slow onboarding
+183,3.0,7.0,5.0,2.0,4.0,5.0,5.0,5.0,2.0,4.0,2.0,Mid-Market,North America,2026-Q1,slow onboarding
+184,2.0,5.0,2.0,3.0,6.0,4.0,6.0,6.0,4.0,2.0,6.0,SMB,North America,2026-Q1,slow onboarding
+185,4.0,4.0,4.0,5.0,3.0,6.0,6.0,5.0,3.0,2.0,5.0,SMB,North America,2026-Q1,love support
+186,5.0,6.0,4.0,2.0,5.0,2.0,5.0,5.0,5.0,2.0,3.0,Mid-Market,North America,2026-Q1,pricing concerns
+187,6.0,7.0,4.0,5.0,3.0,5.0,7.0,2.0,6.0,1.0,3.0,SMB,North America,2026-Q1,good
+188,6.0,7.0,7.0,4.0,4.0,5.0,7.0,4.0,6.0,4.0,4.0,SMB,EMEA,2026-Q1,love support
+189,4.0,4.0,6.0,5.0,6.0,7.0,5.0,1.0,3.0,5.0,6.0,Enterprise,North America,2026-Q1,good
+190,3.0,5.0,6.0,2.0,4.0,5.0,5.0,4.0,5.0,5.0,5.0,SMB,APAC,2026-Q1,slow onboarding
+191,3.0,3.0,5.0,3.0,5.0,3.0,6.0,5.0,2.0,2.0,3.0,SMB,North America,2026-Q1,slow onboarding
+192,4.0,4.0,6.0,4.0,4.0,3.0,4.0,4.0,5.0,2.0,5.0,Enterprise,North America,2026-Q1,good
+193,3.0,5.0,4.0,2.0,4.0,3.0,5.0,4.0,3.0,2.0,6.0,Mid-Market,North America,2026-Q1,slow onboarding
+194,4.0,5.0,6.0,4.0,5.0,5.0,4.0,4.0,2.0,,2.0,Enterprise,North America,2026-Q1,love support
+195,3.0,3.0,6.0,3.0,3.0,6.0,5.0,3.0,4.0,3.0,6.0,Mid-Market,EMEA,2026-Q1,love support
+196,2.0,5.0,5.0,4.0,2.0,3.0,7.0,3.0,5.0,5.0,3.0,SMB,North America,2026-Q1,slow onboarding
+197,2.0,5.0,5.0,1.0,3.0,3.0,2.0,4.0,3.0,4.0,5.0,SMB,EMEA,2026-Q1,good
+198,3.0,4.0,4.0,7.0,3.0,2.0,7.0,4.0,4.0,2.0,3.0,SMB,North America,2026-Q1,love support
+199,4.0,6.0,4.0,4.0,4.0,6.0,7.0,,4.0,6.0,6.0,SMB,North America,2026-Q1,good
+200,6.0,5.0,5.0,4.0,5.0,5.0,4.0,5.0,3.0,6.0,6.0,SMB,EMEA,2026-Q1,good
+201,4.0,7.0,5.0,3.0,3.0,5.0,5.0,2.0,2.0,5.0,3.0,Mid-Market,North America,2026-Q1,
+202,2.0,5.0,4.0,2.0,3.0,3.0,5.0,5.0,4.0,5.0,5.0,SMB,North America,2026-Q1,
+203,3.0,4.0,5.0,,4.0,2.0,6.0,,2.0,2.0,4.0,SMB,North America,2026-Q1,slow onboarding
+204,3.0,6.0,4.0,3.0,4.0,3.0,7.0,,4.0,5.0,4.0,Mid-Market,EMEA,2026-Q1,good
+205,5.0,6.0,4.0,5.0,5.0,5.0,5.0,2.0,5.0,5.0,6.0,SMB,North America,2026-Q1,pricing concerns
+206,5.0,6.0,6.0,2.0,4.0,5.0,5.0,4.0,4.0,,3.0,SMB,North America,2026-Q1,love support
+207,4.0,5.0,4.0,5.0,5.0,3.0,5.0,4.0,2.0,4.0,5.0,SMB,APAC,2026-Q1,love support
+208,5.0,6.0,4.0,6.0,2.0,5.0,5.0,5.0,2.0,2.0,5.0,Enterprise,North America,2026-Q1,pricing concerns
+209,4.0,4.0,6.0,4.0,3.0,4.0,5.0,4.0,5.0,4.0,4.0,Enterprise,North America,2026-Q1,
+210,4.0,6.0,4.0,1.0,4.0,3.0,6.0,2.0,,6.0,3.0,SMB,North America,2026-Q1,good
+211,4.0,6.0,6.0,5.0,3.0,3.0,6.0,2.0,5.0,3.0,5.0,Mid-Market,APAC,2026-Q1,slow onboarding
+212,3.0,3.0,6.0,3.0,5.0,6.0,4.0,4.0,5.0,2.0,3.0,SMB,North America,2026-Q1,pricing concerns
+213,4.0,5.0,4.0,3.0,7.0,4.0,6.0,4.0,5.0,2.0,4.0,SMB,North America,2026-Q1,good
+214,4.0,3.0,6.0,5.0,5.0,1.0,5.0,,2.0,4.0,3.0,Mid-Market,North America,2026-Q1,love support
+215,4.0,5.0,5.0,2.0,5.0,5.0,5.0,4.0,6.0,2.0,5.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+216,3.0,6.0,6.0,1.0,2.0,2.0,5.0,3.0,3.0,3.0,4.0,SMB,North America,2026-Q1,slow onboarding
+217,5.0,6.0,4.0,3.0,3.0,3.0,7.0,3.0,4.0,2.0,4.0,SMB,North America,2026-Q1,pricing concerns
+218,5.0,,4.0,,,,,,,,,Mid-Market,North America,2026-Q1,pricing concerns
+219,2.0,5.0,5.0,2.0,4.0,5.0,6.0,1.0,4.0,,5.0,SMB,APAC,2026-Q1,love support
+220,5.0,5.0,5.0,4.0,4.0,5.0,6.0,,5.0,3.0,5.0,Enterprise,APAC,2026-Q1,slow onboarding
+221,3.0,4.0,6.0,3.0,5.0,5.0,7.0,2.0,5.0,2.0,6.0,SMB,North America,2026-Q1,slow onboarding
+222,3.0,6.0,4.0,4.0,4.0,3.0,7.0,2.0,2.0,3.0,4.0,SMB,North America,2026-Q1,slow onboarding
+223,5.0,6.0,7.0,,3.0,4.0,6.0,5.0,,3.0,4.0,Mid-Market,North America,2026-Q1,good
+224,6.0,6.0,4.0,3.0,2.0,4.0,5.0,3.0,5.0,3.0,4.0,Enterprise,North America,2026-Q1,
+225,2.0,6.0,5.0,4.0,3.0,4.0,6.0,2.0,6.0,,5.0,Mid-Market,APAC,2026-Q1,good
+226,4.0,4.0,7.0,2.0,4.0,4.0,5.0,4.0,4.0,2.0,4.0,Enterprise,North America,2026-Q1,love support
+227,5.0,6.0,5.0,5.0,4.0,5.0,5.0,3.0,6.0,4.0,4.0,SMB,North America,2026-Q1,slow onboarding
+228,2.0,5.0,6.0,2.0,4.0,5.0,3.0,3.0,2.0,3.0,3.0,SMB,North America,2026-Q1,love support
+229,5.0,6.0,4.0,6.0,4.0,4.0,6.0,3.0,3.0,,7.0,SMB,EMEA,2026-Q1,slow onboarding
+230,4.0,6.0,6.0,4.0,4.0,5.0,5.0,,5.0,4.0,5.0,SMB,EMEA,2026-Q1,slow onboarding
+231,4.0,5.0,4.0,5.0,2.0,6.0,7.0,2.0,3.0,4.0,6.0,Enterprise,EMEA,2026-Q1,slow onboarding
+232,4.0,5.0,1.0,3.0,2.0,4.0,6.0,5.0,4.0,3.0,5.0,Enterprise,North America,2026-Q1,pricing concerns
+233,4.0,5.0,3.0,3.0,4.0,5.0,5.0,5.0,5.0,,4.0,Mid-Market,North America,2026-Q1,love support
+234,4.0,5.0,5.0,2.0,3.0,5.0,6.0,3.0,5.0,4.0,4.0,Mid-Market,North America,2026-Q1,slow onboarding
+235,3.0,6.0,5.0,4.0,2.0,3.0,4.0,1.0,5.0,3.0,4.0,Mid-Market,APAC,2026-Q1,love support
+236,4.0,4.0,5.0,3.0,5.0,6.0,6.0,2.0,5.0,5.0,2.0,Enterprise,North America,2026-Q1,love support
+237,6.0,5.0,3.0,5.0,5.0,3.0,5.0,2.0,,5.0,4.0,SMB,North America,2026-Q1,
+238,5.0,5.0,7.0,5.0,4.0,6.0,6.0,5.0,4.0,4.0,5.0,Mid-Market,EMEA,2026-Q1,good
+239,5.0,6.0,5.0,4.0,5.0,5.0,4.0,4.0,3.0,3.0,6.0,Enterprise,EMEA,2026-Q1,pricing concerns
+240,5.0,7.0,4.0,4.0,5.0,7.0,5.0,6.0,4.0,4.0,6.0,Mid-Market,North America,2026-Q1,
+241,4.0,5.0,6.0,4.0,4.0,4.0,4.0,4.0,4.0,3.0,5.0,Mid-Market,North America,2026-Q1,good
+242,5.0,6.0,6.0,3.0,6.0,4.0,6.0,,4.0,,6.0,Enterprise,North America,2026-Q1,slow onboarding
+243,2.0,6.0,5.0,3.0,2.0,6.0,7.0,4.0,3.0,2.0,2.0,SMB,APAC,2026-Q1,pricing concerns
+244,4.0,7.0,6.0,3.0,3.0,5.0,5.0,4.0,4.0,2.0,5.0,SMB,North America,2026-Q1,love support
+245,4.0,6.0,5.0,4.0,5.0,6.0,5.0,4.0,3.0,3.0,,SMB,EMEA,2026-Q1,good
+246,4.0,7.0,5.0,2.0,3.0,7.0,6.0,4.0,5.0,4.0,,Mid-Market,North America,2026-Q1,slow onboarding
+247,4.0,6.0,6.0,5.0,6.0,7.0,6.0,5.0,5.0,3.0,3.0,SMB,North America,2026-Q1,love support
+248,4.0,7.0,6.0,2.0,4.0,5.0,3.0,3.0,5.0,5.0,5.0,SMB,North America,2026-Q1,
+249,6.0,5.0,7.0,4.0,3.0,2.0,5.0,4.0,3.0,4.0,,SMB,North America,2026-Q1,love support
+250,3.0,,,,,,,,,,6.0,SMB,North America,2026-Q1,pricing concerns
+251,2.0,6.0,5.0,2.0,4.0,1.0,4.0,3.0,3.0,3.0,5.0,Mid-Market,APAC,2026-Q1,good
+252,3.0,6.0,6.0,2.0,3.0,4.0,5.0,4.0,4.0,4.0,5.0,Mid-Market,APAC,2026-Q1,
+253,4.0,5.0,5.0,6.0,5.0,5.0,5.0,4.0,3.0,4.0,6.0,Mid-Market,North America,2026-Q1,good
+254,3.0,7.0,5.0,4.0,5.0,1.0,5.0,4.0,4.0,3.0,5.0,Enterprise,North America,2026-Q1,slow onboarding
+255,3.0,6.0,4.0,2.0,4.0,3.0,4.0,4.0,5.0,3.0,4.0,Mid-Market,North America,2026-Q1,
+256,5.0,6.0,4.0,5.0,6.0,5.0,4.0,4.0,6.0,4.0,4.0,SMB,EMEA,2026-Q1,pricing concerns
+257,4.0,5.0,5.0,5.0,5.0,2.0,6.0,,6.0,1.0,4.0,Enterprise,North America,2026-Q1,slow onboarding
+258,3.0,4.0,5.0,5.0,2.0,4.0,5.0,4.0,3.0,3.0,,SMB,North America,2026-Q1,good
+259,4.0,6.0,5.0,2.0,4.0,5.0,6.0,2.0,4.0,6.0,3.0,Enterprise,EMEA,2026-Q1,pricing concerns
+260,3.0,4.0,5.0,2.0,5.0,5.0,5.0,3.0,4.0,3.0,4.0,Mid-Market,EMEA,2026-Q1,good
+261,4.0,7.0,4.0,1.0,3.0,4.0,5.0,4.0,2.0,4.0,6.0,Enterprise,EMEA,2026-Q1,pricing concerns
+262,4.0,6.0,6.0,2.0,3.0,6.0,5.0,6.0,3.0,3.0,3.0,SMB,North America,2026-Q1,pricing concerns
+263,3.0,6.0,5.0,3.0,5.0,4.0,6.0,3.0,2.0,1.0,,SMB,North America,2026-Q1,pricing concerns
+264,2.0,5.0,5.0,3.0,4.0,6.0,5.0,4.0,5.0,2.0,4.0,Mid-Market,North America,2026-Q1,slow onboarding
+265,4.0,5.0,6.0,5.0,4.0,3.0,5.0,5.0,3.0,5.0,6.0,SMB,EMEA,2026-Q1,pricing concerns
+266,4.0,6.0,5.0,2.0,3.0,5.0,5.0,2.0,4.0,2.0,7.0,SMB,APAC,2026-Q1,good
+267,5.0,6.0,7.0,2.0,5.0,5.0,6.0,3.0,3.0,6.0,4.0,SMB,North America,2026-Q1,love support
+268,4.0,3.0,6.0,2.0,3.0,3.0,6.0,5.0,4.0,4.0,3.0,Mid-Market,North America,2026-Q1,
+269,3.0,5.0,4.0,4.0,2.0,2.0,6.0,5.0,4.0,,6.0,Enterprise,North America,2026-Q1,pricing concerns
+270,4.0,4.0,3.0,5.0,5.0,5.0,6.0,6.0,4.0,4.0,,SMB,North America,2026-Q1,slow onboarding
+271,2.0,4.0,5.0,3.0,2.0,4.0,3.0,4.0,3.0,4.0,3.0,Enterprise,North America,2026-Q1,slow onboarding
+272,5.0,5.0,5.0,3.0,3.0,4.0,6.0,4.0,3.0,5.0,6.0,SMB,EMEA,2026-Q1,pricing concerns
+273,5.0,4.0,6.0,5.0,5.0,5.0,6.0,3.0,5.0,5.0,3.0,SMB,EMEA,2026-Q1,
+274,4.0,4.0,6.0,3.0,4.0,3.0,4.0,4.0,3.0,2.0,5.0,Mid-Market,North America,2026-Q1,good
+275,4.0,6.0,6.0,2.0,3.0,5.0,6.0,2.0,,3.0,2.0,SMB,APAC,2026-Q1,pricing concerns
+276,3.0,5.0,5.0,4.0,5.0,4.0,5.0,5.0,5.0,4.0,2.0,Enterprise,North America,2026-Q1,love support
+277,4.0,6.0,5.0,4.0,6.0,6.0,4.0,4.0,5.0,,,SMB,APAC,2026-Q1,
+278,3.0,6.0,4.0,3.0,5.0,3.0,6.0,,4.0,4.0,4.0,SMB,APAC,2026-Q1,
+279,5.0,7.0,5.0,4.0,3.0,4.0,7.0,3.0,3.0,2.0,3.0,Mid-Market,EMEA,2026-Q1,
+280,4.0,5.0,5.0,2.0,5.0,4.0,5.0,3.0,5.0,2.0,4.0,SMB,North America,2026-Q1,
+281,5.0,6.0,6.0,3.0,5.0,2.0,5.0,,3.0,5.0,3.0,Enterprise,North America,2026-Q1,
+282,4.0,6.0,3.0,4.0,2.0,6.0,5.0,5.0,1.0,3.0,6.0,Mid-Market,North America,2026-Q1,slow onboarding
+283,3.0,6.0,4.0,2.0,4.0,4.0,6.0,6.0,4.0,3.0,5.0,SMB,North America,2026-Q1,pricing concerns
+284,3.0,4.0,5.0,3.0,4.0,3.0,6.0,4.0,5.0,2.0,4.0,SMB,North America,2026-Q1,
+285,4.0,5.0,5.0,3.0,4.0,3.0,5.0,,5.0,4.0,4.0,SMB,APAC,2026-Q1,
+286,4.0,6.0,4.0,4.0,6.0,4.0,6.0,3.0,3.0,,4.0,SMB,North America,2026-Q1,pricing concerns
+287,2.0,4.0,5.0,5.0,3.0,2.0,6.0,6.0,3.0,2.0,5.0,SMB,EMEA,2026-Q1,
+288,5.0,6.0,4.0,5.0,5.0,5.0,6.0,5.0,,2.0,6.0,SMB,North America,2026-Q1,love support
+289,2.0,5.0,5.0,4.0,4.0,4.0,6.0,4.0,2.0,3.0,4.0,Enterprise,North America,2026-Q1,love support
+290,3.0,5.0,6.0,,5.0,4.0,6.0,4.0,,2.0,3.0,Mid-Market,North America,2026-Q1,slow onboarding
+291,5.0,6.0,6.0,6.0,5.0,3.0,6.0,3.0,4.0,4.0,6.0,SMB,North America,2026-Q1,pricing concerns
+292,3.0,7.0,3.0,1.0,3.0,5.0,4.0,2.0,5.0,2.0,6.0,Enterprise,North America,2026-Q1,slow onboarding
+293,3.0,3.0,7.0,4.0,4.0,5.0,6.0,5.0,4.0,3.0,5.0,Mid-Market,North America,2026-Q1,slow onboarding
+294,6.0,6.0,6.0,3.0,3.0,4.0,4.0,,4.0,2.0,2.0,Mid-Market,North America,2026-Q1,
+295,,6.0,6.0,2.0,4.0,3.0,5.0,4.0,5.0,,5.0,Mid-Market,North America,2026-Q1,good
+296,5.0,5.0,5.0,4.0,6.0,5.0,6.0,3.0,6.0,3.0,3.0,SMB,EMEA,2026-Q1,love support
+297,4.0,5.0,6.0,4.0,4.0,2.0,6.0,,4.0,2.0,2.0,SMB,EMEA,2026-Q1,slow onboarding
+298,2.0,4.0,4.0,2.0,4.0,4.0,4.0,4.0,6.0,4.0,6.0,Enterprise,EMEA,2026-Q1,pricing concerns
+299,4.0,4.0,6.0,3.0,5.0,7.0,5.0,4.0,3.0,3.0,3.0,SMB,North America,2026-Q1,pricing concerns
+300,3.0,4.0,6.0,2.0,4.0,4.0,5.0,3.0,3.0,3.0,6.0,SMB,North America,2026-Q1,slow onboarding
+301,4.0,6.0,6.0,4.0,4.0,6.0,7.0,,,2.0,5.0,SMB,North America,2026-Q1,love support
+302,6.0,5.0,4.0,4.0,4.0,2.0,6.0,,,5.0,7.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+303,3.0,6.0,5.0,2.0,5.0,3.0,5.0,2.0,5.0,3.0,6.0,Mid-Market,EMEA,2026-Q1,love support
+304,4.0,6.0,4.0,4.0,5.0,5.0,7.0,2.0,4.0,1.0,4.0,SMB,EMEA,2026-Q1,good
+305,5.0,6.0,6.0,4.0,3.0,4.0,7.0,,6.0,3.0,2.0,SMB,APAC,2026-Q1,love support
+306,3.0,3.0,2.0,2.0,2.0,6.0,6.0,2.0,4.0,3.0,5.0,Mid-Market,APAC,2026-Q1,good
+307,4.0,5.0,5.0,4.0,4.0,5.0,6.0,3.0,3.0,3.0,4.0,SMB,EMEA,2026-Q1,slow onboarding
+308,7.0,6.0,7.0,4.0,3.0,4.0,7.0,4.0,5.0,2.0,6.0,Mid-Market,North America,2026-Q1,
+309,5.0,,,,,,,,,,3.0,SMB,EMEA,2026-Q1,
+310,3.0,6.0,6.0,4.0,6.0,3.0,7.0,3.0,,3.0,6.0,Mid-Market,North America,2026-Q1,love support
+311,2.0,4.0,5.0,2.0,5.0,4.0,5.0,3.0,3.0,1.0,6.0,SMB,EMEA,2026-Q1,slow onboarding
+312,5.0,5.0,6.0,4.0,4.0,6.0,7.0,4.0,3.0,3.0,5.0,Enterprise,North America,2026-Q1,love support
+313,4.0,6.0,7.0,4.0,2.0,2.0,6.0,6.0,2.0,4.0,7.0,SMB,North America,2026-Q1,love support
+314,3.0,3.0,3.0,4.0,5.0,4.0,5.0,3.0,4.0,3.0,5.0,SMB,North America,2026-Q1,love support
+315,,7.0,5.0,6.0,3.0,2.0,6.0,,3.0,4.0,6.0,Enterprise,North America,2026-Q1,
+316,3.0,7.0,5.0,4.0,5.0,3.0,5.0,5.0,4.0,2.0,,SMB,North America,2026-Q1,
+317,3.0,6.0,6.0,4.0,2.0,3.0,6.0,,4.0,4.0,6.0,Enterprise,EMEA,2026-Q1,
+318,4.0,4.0,4.0,,3.0,4.0,7.0,6.0,5.0,4.0,4.0,Enterprise,EMEA,2026-Q1,
+319,2.0,5.0,5.0,3.0,4.0,3.0,4.0,3.0,5.0,4.0,5.0,Mid-Market,APAC,2026-Q1,good
+320,4.0,5.0,5.0,4.0,4.0,4.0,3.0,,4.0,4.0,4.0,Mid-Market,North America,2026-Q1,good
+321,4.0,6.0,4.0,2.0,4.0,5.0,4.0,5.0,6.0,2.0,5.0,Mid-Market,North America,2026-Q1,love support
+322,3.0,3.0,5.0,5.0,5.0,5.0,6.0,2.0,5.0,3.0,7.0,SMB,EMEA,2026-Q1,love support
+323,2.0,5.0,5.0,4.0,3.0,4.0,4.0,2.0,2.0,4.0,3.0,SMB,North America,2026-Q1,slow onboarding
+324,4.0,6.0,6.0,3.0,4.0,2.0,6.0,5.0,3.0,2.0,3.0,Mid-Market,North America,2026-Q1,pricing concerns
+325,2.0,2.0,5.0,2.0,3.0,5.0,5.0,4.0,2.0,3.0,7.0,Enterprise,North America,2026-Q1,love support
+326,2.0,6.0,4.0,2.0,5.0,3.0,4.0,6.0,3.0,3.0,6.0,Mid-Market,North America,2026-Q1,love support
+327,4.0,3.0,4.0,5.0,5.0,4.0,7.0,3.0,5.0,6.0,5.0,SMB,North America,2026-Q1,
+328,,2.0,4.0,6.0,4.0,4.0,6.0,3.0,5.0,6.0,2.0,Enterprise,APAC,2026-Q1,
+329,2.0,4.0,4.0,5.0,4.0,4.0,6.0,,3.0,2.0,4.0,Enterprise,EMEA,2026-Q1,slow onboarding
+330,5.0,3.0,5.0,7.0,5.0,5.0,6.0,2.0,4.0,5.0,,SMB,North America,2026-Q1,slow onboarding
+331,3.0,5.0,5.0,5.0,4.0,3.0,2.0,4.0,,2.0,3.0,Mid-Market,North America,2026-Q1,
+332,5.0,6.0,5.0,2.0,5.0,4.0,3.0,3.0,,5.0,7.0,SMB,North America,2026-Q1,
+333,5.0,7.0,7.0,3.0,3.0,4.0,6.0,6.0,6.0,4.0,,SMB,APAC,2026-Q1,good
+334,4.0,7.0,5.0,3.0,2.0,4.0,6.0,,4.0,3.0,4.0,Mid-Market,North America,2026-Q1,good
+335,4.0,4.0,4.0,4.0,4.0,4.0,6.0,3.0,,3.0,,Mid-Market,EMEA,2026-Q1,
+336,4.0,5.0,4.0,3.0,6.0,4.0,5.0,4.0,3.0,2.0,3.0,Mid-Market,North America,2026-Q1,pricing concerns
+337,5.0,7.0,7.0,4.0,3.0,5.0,5.0,3.0,3.0,4.0,3.0,Mid-Market,North America,2026-Q1,love support
+338,5.0,7.0,7.0,4.0,6.0,5.0,5.0,2.0,4.0,4.0,2.0,Enterprise,North America,2026-Q1,pricing concerns
+339,2.0,5.0,5.0,3.0,3.0,5.0,3.0,3.0,6.0,3.0,5.0,Mid-Market,North America,2026-Q1,pricing concerns
+340,3.0,6.0,6.0,3.0,4.0,4.0,6.0,1.0,4.0,4.0,4.0,Enterprise,North America,2026-Q1,love support
+341,6.0,5.0,6.0,4.0,3.0,6.0,6.0,2.0,5.0,5.0,4.0,SMB,North America,2026-Q1,good
+342,3.0,6.0,4.0,4.0,5.0,4.0,6.0,4.0,2.0,5.0,5.0,Enterprise,North America,2026-Q1,good
+343,5.0,4.0,6.0,5.0,5.0,4.0,5.0,3.0,1.0,3.0,6.0,Enterprise,North America,2026-Q1,
+344,4.0,5.0,4.0,3.0,4.0,4.0,6.0,6.0,4.0,2.0,6.0,SMB,EMEA,2026-Q1,
+345,3.0,4.0,5.0,2.0,6.0,4.0,7.0,,3.0,6.0,5.0,SMB,North America,2026-Q1,
+346,4.0,4.0,5.0,2.0,6.0,3.0,4.0,5.0,3.0,,6.0,SMB,North America,2026-Q1,pricing concerns
+347,2.0,3.0,4.0,5.0,5.0,3.0,5.0,3.0,3.0,3.0,2.0,SMB,EMEA,2026-Q1,slow onboarding
+348,4.0,6.0,5.0,5.0,4.0,6.0,5.0,5.0,,3.0,5.0,SMB,North America,2026-Q1,slow onboarding
+349,3.0,4.0,7.0,3.0,4.0,6.0,6.0,3.0,4.0,2.0,4.0,SMB,North America,2026-Q1,pricing concerns
+350,3.0,4.0,6.0,4.0,4.0,4.0,5.0,5.0,,4.0,6.0,SMB,APAC,2026-Q1,
+351,4.0,6.0,7.0,1.0,3.0,6.0,5.0,5.0,4.0,,4.0,SMB,North America,2026-Q1,
+352,3.0,6.0,3.0,2.0,3.0,4.0,6.0,,5.0,3.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+353,4.0,5.0,4.0,2.0,3.0,6.0,7.0,,6.0,,,Mid-Market,North America,2026-Q1,good
+354,5.0,4.0,6.0,5.0,3.0,4.0,7.0,2.0,4.0,5.0,6.0,SMB,North America,2026-Q1,slow onboarding
+355,5.0,7.0,5.0,3.0,5.0,4.0,6.0,4.0,3.0,4.0,4.0,SMB,North America,2026-Q1,love support
+356,3.0,6.0,6.0,2.0,4.0,3.0,3.0,3.0,3.0,4.0,4.0,Enterprise,North America,2026-Q1,pricing concerns
+357,3.0,4.0,5.0,2.0,4.0,5.0,4.0,4.0,2.0,,4.0,Mid-Market,APAC,2026-Q1,
+358,3.0,4.0,3.0,3.0,2.0,5.0,6.0,6.0,3.0,4.0,3.0,SMB,North America,2026-Q1,
+359,5.0,6.0,4.0,3.0,4.0,4.0,7.0,4.0,2.0,,3.0,Enterprise,North America,2026-Q1,
+360,3.0,4.0,5.0,2.0,6.0,4.0,5.0,3.0,3.0,2.0,5.0,Mid-Market,North America,2026-Q1,good
+361,1.0,2.0,2.0,3.0,3.0,4.0,5.0,3.0,4.0,5.0,7.0,SMB,North America,2026-Q1,love support
+362,4.0,4.0,5.0,3.0,4.0,6.0,6.0,3.0,4.0,3.0,3.0,SMB,EMEA,2026-Q1,good
+363,3.0,4.0,4.0,2.0,3.0,3.0,4.0,5.0,4.0,3.0,6.0,SMB,EMEA,2026-Q1,pricing concerns
+364,3.0,5.0,3.0,2.0,5.0,5.0,2.0,4.0,3.0,5.0,,SMB,North America,2026-Q1,
+365,5.0,5.0,5.0,5.0,2.0,3.0,4.0,4.0,3.0,5.0,6.0,Mid-Market,North America,2026-Q1,
+366,3.0,5.0,3.0,3.0,3.0,3.0,4.0,3.0,2.0,4.0,6.0,SMB,North America,2026-Q1,
+367,5.0,5.0,7.0,3.0,4.0,6.0,5.0,3.0,3.0,4.0,,SMB,APAC,2026-Q1,love support
+368,4.0,6.0,6.0,4.0,3.0,4.0,4.0,5.0,5.0,3.0,1.0,Mid-Market,North America,2026-Q1,slow onboarding
+369,3.0,3.0,5.0,2.0,4.0,6.0,5.0,3.0,4.0,,7.0,Mid-Market,North America,2026-Q1,
+370,4.0,4.0,5.0,4.0,3.0,3.0,5.0,4.0,3.0,3.0,3.0,Mid-Market,North America,2026-Q1,good
+371,2.0,3.0,5.0,4.0,5.0,4.0,6.0,5.0,3.0,3.0,,SMB,APAC,2026-Q1,love support
+372,4.0,5.0,5.0,3.0,5.0,5.0,5.0,2.0,4.0,2.0,2.0,SMB,North America,2026-Q1,slow onboarding
+373,5.0,7.0,6.0,5.0,3.0,3.0,5.0,,5.0,,3.0,SMB,North America,2026-Q1,slow onboarding
+374,5.0,6.0,5.0,3.0,5.0,4.0,4.0,,4.0,5.0,3.0,Mid-Market,EMEA,2026-Q1,
+375,5.0,6.0,5.0,5.0,3.0,4.0,5.0,4.0,6.0,,2.0,SMB,North America,2026-Q1,love support
+376,5.0,6.0,6.0,4.0,3.0,5.0,6.0,2.0,4.0,4.0,3.0,Mid-Market,North America,2026-Q1,pricing concerns
+377,4.0,4.0,5.0,2.0,4.0,3.0,6.0,5.0,2.0,5.0,4.0,Enterprise,North America,2026-Q1,
+378,4.0,5.0,7.0,3.0,4.0,3.0,5.0,4.0,3.0,4.0,5.0,SMB,North America,2026-Q1,slow onboarding
+379,5.0,5.0,6.0,5.0,4.0,5.0,6.0,4.0,4.0,2.0,6.0,Enterprise,North America,2026-Q1,good
+380,,3.0,7.0,3.0,4.0,3.0,6.0,4.0,6.0,,4.0,Mid-Market,North America,2026-Q1,good
+381,4.0,7.0,5.0,4.0,5.0,5.0,6.0,,3.0,3.0,6.0,Mid-Market,North America,2026-Q1,
+382,3.0,5.0,5.0,2.0,4.0,4.0,6.0,,6.0,3.0,,SMB,North America,2026-Q1,slow onboarding
+383,4.0,6.0,6.0,4.0,5.0,2.0,4.0,4.0,4.0,1.0,4.0,Mid-Market,North America,2026-Q1,good
+384,6.0,6.0,5.0,3.0,5.0,5.0,6.0,,4.0,4.0,4.0,Enterprise,APAC,2026-Q1,love support
+385,5.0,6.0,7.0,5.0,5.0,4.0,4.0,4.0,4.0,2.0,6.0,SMB,APAC,2026-Q1,good
+386,3.0,6.0,4.0,4.0,4.0,7.0,4.0,,3.0,5.0,6.0,SMB,North America,2026-Q1,slow onboarding
+387,3.0,5.0,6.0,4.0,4.0,3.0,2.0,,2.0,3.0,5.0,SMB,EMEA,2026-Q1,
+388,,5.0,5.0,4.0,5.0,3.0,6.0,,2.0,3.0,3.0,SMB,APAC,2026-Q1,slow onboarding
+389,1.0,4.0,3.0,4.0,4.0,7.0,6.0,3.0,2.0,,4.0,Enterprise,North America,2026-Q1,pricing concerns
+390,4.0,5.0,5.0,3.0,4.0,4.0,6.0,3.0,2.0,2.0,7.0,Mid-Market,North America,2026-Q1,slow onboarding
+391,5.0,6.0,6.0,2.0,5.0,5.0,4.0,3.0,2.0,4.0,3.0,SMB,North America,2026-Q1,good
+392,5.0,7.0,5.0,5.0,3.0,6.0,6.0,6.0,4.0,3.0,6.0,SMB,North America,2026-Q1,love support
+393,5.0,5.0,2.0,5.0,2.0,4.0,7.0,,5.0,4.0,4.0,SMB,North America,2026-Q1,slow onboarding
+394,3.0,3.0,3.0,6.0,4.0,4.0,5.0,,2.0,1.0,6.0,Enterprise,EMEA,2026-Q1,good
+395,5.0,6.0,5.0,4.0,5.0,5.0,5.0,,5.0,3.0,7.0,SMB,North America,2026-Q1,slow onboarding
+396,3.0,7.0,6.0,1.0,4.0,4.0,6.0,2.0,3.0,3.0,5.0,Mid-Market,North America,2026-Q1,love support
+397,5.0,7.0,7.0,5.0,7.0,6.0,5.0,4.0,2.0,2.0,3.0,Mid-Market,APAC,2026-Q1,
+398,2.0,6.0,5.0,3.0,4.0,5.0,4.0,5.0,4.0,3.0,4.0,Mid-Market,North America,2026-Q1,slow onboarding
+399,3.0,6.0,4.0,3.0,4.0,6.0,6.0,3.0,5.0,2.0,5.0,Enterprise,North America,2026-Q1,pricing concerns
+400,3.0,4.0,6.0,4.0,5.0,5.0,6.0,3.0,2.0,3.0,7.0,Mid-Market,North America,2026-Q1,pricing concerns
+401,2.0,4.0,5.0,3.0,2.0,4.0,6.0,3.0,4.0,,4.0,SMB,EMEA,2026-Q1,pricing concerns
+402,2.0,6.0,6.0,4.0,2.0,3.0,4.0,,2.0,3.0,6.0,SMB,APAC,2026-Q1,good
+403,3.0,5.0,5.0,3.0,6.0,4.0,6.0,3.0,4.0,,4.0,SMB,North America,2026-Q1,pricing concerns
+404,6.0,7.0,4.0,5.0,4.0,4.0,6.0,3.0,2.0,3.0,4.0,Mid-Market,North America,2026-Q1,
+405,3.0,5.0,3.0,4.0,5.0,4.0,6.0,5.0,,4.0,5.0,Mid-Market,North America,2026-Q1,pricing concerns
+406,3.0,5.0,6.0,2.0,3.0,5.0,5.0,3.0,3.0,3.0,5.0,Enterprise,EMEA,2026-Q1,good
+407,4.0,5.0,3.0,,3.0,4.0,5.0,3.0,2.0,3.0,6.0,Enterprise,North America,2026-Q1,
+408,4.0,5.0,2.0,3.0,6.0,4.0,5.0,3.0,4.0,4.0,2.0,Mid-Market,APAC,2026-Q1,
+409,5.0,5.0,6.0,6.0,6.0,3.0,6.0,5.0,5.0,3.0,5.0,Enterprise,North America,2026-Q1,love support
+410,3.0,5.0,5.0,3.0,4.0,5.0,7.0,4.0,3.0,4.0,5.0,Mid-Market,EMEA,2026-Q1,love support
+411,4.0,7.0,5.0,4.0,5.0,6.0,5.0,,3.0,3.0,5.0,Enterprise,EMEA,2026-Q1,love support
+412,4.0,5.0,3.0,3.0,6.0,5.0,6.0,5.0,2.0,3.0,3.0,Mid-Market,North America,2026-Q1,good
+413,4.0,4.0,5.0,,5.0,5.0,3.0,4.0,4.0,,4.0,SMB,North America,2026-Q1,love support
+414,4.0,4.0,6.0,3.0,4.0,7.0,2.0,3.0,5.0,3.0,4.0,Mid-Market,North America,2026-Q1,good
+415,3.0,,,,4.0,,,,,,,Enterprise,EMEA,2026-Q1,slow onboarding
+416,3.0,4.0,7.0,3.0,4.0,5.0,6.0,4.0,4.0,3.0,5.0,SMB,North America,2026-Q1,good
+417,4.0,5.0,6.0,2.0,5.0,3.0,5.0,,4.0,4.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+418,5.0,5.0,5.0,5.0,5.0,7.0,6.0,4.0,3.0,4.0,5.0,SMB,APAC,2026-Q1,good
+419,3.0,5.0,5.0,3.0,5.0,6.0,3.0,2.0,4.0,3.0,2.0,SMB,EMEA,2026-Q1,pricing concerns
+420,5.0,6.0,5.0,5.0,4.0,4.0,5.0,5.0,4.0,3.0,3.0,Enterprise,APAC,2026-Q1,pricing concerns
+421,5.0,5.0,7.0,4.0,4.0,3.0,4.0,6.0,4.0,2.0,3.0,SMB,North America,2026-Q1,pricing concerns
+422,2.0,5.0,4.0,4.0,6.0,1.0,6.0,2.0,3.0,2.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+423,4.0,5.0,5.0,4.0,2.0,4.0,5.0,2.0,5.0,4.0,4.0,SMB,EMEA,2026-Q1,pricing concerns
+424,4.0,5.0,4.0,5.0,4.0,3.0,6.0,3.0,5.0,5.0,5.0,Enterprise,APAC,2026-Q1,love support
+425,3.0,6.0,6.0,4.0,3.0,6.0,6.0,5.0,3.0,3.0,6.0,SMB,APAC,2026-Q1,love support
+426,3.0,6.0,5.0,3.0,4.0,4.0,5.0,5.0,2.0,3.0,5.0,SMB,North America,2026-Q1,pricing concerns
+427,4.0,6.0,3.0,5.0,5.0,3.0,4.0,5.0,4.0,3.0,5.0,SMB,APAC,2026-Q1,good
+428,5.0,7.0,4.0,4.0,4.0,3.0,5.0,5.0,3.0,4.0,6.0,SMB,North America,2026-Q1,good
+429,3.0,5.0,4.0,3.0,2.0,4.0,3.0,2.0,4.0,4.0,4.0,Enterprise,EMEA,2026-Q1,slow onboarding
+430,4.0,6.0,5.0,2.0,5.0,3.0,7.0,3.0,4.0,3.0,5.0,SMB,APAC,2026-Q1,
+431,2.0,3.0,5.0,4.0,5.0,2.0,6.0,2.0,6.0,3.0,5.0,SMB,North America,2026-Q1,love support
+432,4.0,6.0,3.0,3.0,2.0,6.0,4.0,5.0,5.0,2.0,6.0,SMB,EMEA,2026-Q1,good
+433,4.0,5.0,6.0,2.0,6.0,6.0,4.0,4.0,4.0,3.0,3.0,Mid-Market,APAC,2026-Q1,love support
+434,2.0,3.0,6.0,1.0,5.0,3.0,6.0,4.0,4.0,3.0,6.0,SMB,EMEA,2026-Q1,
+435,4.0,6.0,4.0,2.0,3.0,5.0,4.0,4.0,5.0,3.0,3.0,Mid-Market,EMEA,2026-Q1,pricing concerns
+436,,7.0,4.0,1.0,3.0,6.0,6.0,3.0,,3.0,3.0,Mid-Market,EMEA,2026-Q1,
+437,2.0,5.0,5.0,3.0,4.0,3.0,4.0,3.0,3.0,,4.0,SMB,EMEA,2026-Q1,good
+438,4.0,6.0,6.0,2.0,6.0,3.0,4.0,4.0,,2.0,4.0,SMB,APAC,2026-Q1,pricing concerns
+439,4.0,5.0,5.0,3.0,4.0,5.0,5.0,3.0,2.0,4.0,5.0,Mid-Market,EMEA,2026-Q1,
+440,5.0,6.0,5.0,3.0,4.0,1.0,6.0,2.0,4.0,3.0,,Enterprise,North America,2026-Q1,
+441,3.0,6.0,5.0,2.0,3.0,6.0,6.0,4.0,5.0,5.0,4.0,Enterprise,North America,2026-Q1,good
+442,5.0,4.0,6.0,3.0,5.0,2.0,6.0,5.0,4.0,,6.0,Mid-Market,North America,2026-Q1,good
+443,4.0,7.0,4.0,3.0,3.0,4.0,6.0,4.0,2.0,2.0,5.0,Enterprise,APAC,2026-Q1,good
+444,4.0,4.0,5.0,5.0,3.0,6.0,7.0,4.0,3.0,5.0,3.0,Enterprise,EMEA,2026-Q1,
+445,5.0,5.0,6.0,6.0,4.0,5.0,5.0,3.0,2.0,3.0,3.0,Mid-Market,North America,2026-Q1,love support
+446,,6.0,4.0,4.0,4.0,4.0,6.0,5.0,3.0,5.0,4.0,Mid-Market,APAC,2026-Q1,love support
+447,3.0,4.0,5.0,2.0,2.0,4.0,5.0,3.0,4.0,3.0,,Enterprise,APAC,2026-Q1,pricing concerns
+448,3.0,3.0,5.0,4.0,5.0,2.0,7.0,,3.0,3.0,3.0,Enterprise,North America,2026-Q1,slow onboarding
+449,4.0,6.0,2.0,5.0,3.0,6.0,5.0,3.0,4.0,,6.0,SMB,EMEA,2026-Q1,
+450,3.0,5.0,5.0,2.0,4.0,5.0,6.0,2.0,2.0,4.0,7.0,Enterprise,North America,2026-Q1,
+451,3.0,5.0,6.0,4.0,2.0,3.0,5.0,4.0,4.0,6.0,4.0,Mid-Market,APAC,2026-Q1,slow onboarding
+452,1.0,5.0,3.0,4.0,2.0,4.0,6.0,,3.0,3.0,5.0,SMB,North America,2026-Q1,good
+453,3.0,4.0,6.0,2.0,5.0,4.0,6.0,,2.0,,4.0,SMB,North America,2026-Q1,good
+454,4.0,4.0,4.0,4.0,2.0,5.0,5.0,3.0,3.0,,5.0,Mid-Market,North America,2026-Q1,
+455,3.0,5.0,7.0,4.0,3.0,3.0,4.0,3.0,3.0,3.0,5.0,SMB,North America,2026-Q1,good
+456,3.0,5.0,4.0,4.0,4.0,5.0,3.0,6.0,3.0,3.0,3.0,Enterprise,APAC,2026-Q1,pricing concerns
+457,5.0,6.0,6.0,5.0,4.0,5.0,4.0,3.0,5.0,2.0,4.0,Mid-Market,North America,2026-Q1,pricing concerns
+458,5.0,4.0,3.0,,2.0,3.0,6.0,5.0,3.0,5.0,5.0,Enterprise,North America,2026-Q1,good
+459,5.0,5.0,5.0,2.0,5.0,5.0,7.0,3.0,4.0,5.0,,Mid-Market,North America,2026-Q1,slow onboarding
+460,3.0,5.0,6.0,,4.0,4.0,5.0,2.0,5.0,,4.0,SMB,North America,2026-Q1,
+461,4.0,7.0,,,,,,,,,,Enterprise,APAC,2026-Q1,love support
+462,3.0,4.0,5.0,2.0,5.0,3.0,5.0,2.0,2.0,4.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+463,4.0,5.0,5.0,4.0,4.0,4.0,4.0,3.0,4.0,,5.0,SMB,EMEA,2026-Q1,slow onboarding
+464,3.0,4.0,5.0,3.0,3.0,7.0,4.0,5.0,3.0,,4.0,Mid-Market,EMEA,2026-Q1,slow onboarding
+465,4.0,6.0,6.0,2.0,3.0,4.0,4.0,2.0,6.0,5.0,3.0,SMB,North America,2026-Q1,slow onboarding
+466,5.0,6.0,5.0,4.0,4.0,7.0,6.0,3.0,4.0,5.0,4.0,SMB,North America,2026-Q1,slow onboarding
+467,4.0,5.0,5.0,2.0,5.0,5.0,4.0,5.0,4.0,2.0,,Mid-Market,North America,2026-Q1,
+468,3.0,6.0,5.0,,4.0,5.0,6.0,3.0,3.0,,5.0,Mid-Market,North America,2026-Q1,good
+469,2.0,2.0,5.0,4.0,2.0,5.0,5.0,4.0,2.0,3.0,4.0,Mid-Market,APAC,2026-Q1,good
+470,4.0,4.0,6.0,5.0,4.0,5.0,5.0,5.0,5.0,2.0,5.0,Enterprise,EMEA,2026-Q1,love support
+471,3.0,6.0,4.0,2.0,4.0,6.0,4.0,3.0,3.0,2.0,5.0,Mid-Market,North America,2026-Q1,love support
+472,3.0,5.0,5.0,4.0,4.0,4.0,6.0,3.0,4.0,2.0,2.0,SMB,EMEA,2026-Q1,good
+473,6.0,6.0,7.0,4.0,5.0,6.0,4.0,4.0,2.0,4.0,5.0,SMB,EMEA,2026-Q1,good
+474,2.0,5.0,2.0,4.0,4.0,3.0,5.0,4.0,4.0,3.0,4.0,SMB,North America,2026-Q1,slow onboarding
+475,2.0,4.0,4.0,3.0,3.0,2.0,6.0,,5.0,5.0,3.0,Mid-Market,North America,2026-Q1,love support
+476,4.0,6.0,4.0,4.0,5.0,6.0,7.0,5.0,4.0,1.0,5.0,Enterprise,APAC,2026-Q1,good
+477,3.0,5.0,4.0,2.0,6.0,4.0,4.0,2.0,4.0,5.0,4.0,SMB,North America,2026-Q1,pricing concerns
+478,4.0,5.0,6.0,2.0,2.0,6.0,4.0,6.0,4.0,2.0,5.0,Mid-Market,North America,2026-Q1,slow onboarding
+479,2.0,3.0,4.0,5.0,2.0,2.0,5.0,2.0,5.0,2.0,5.0,Mid-Market,EMEA,2026-Q1,pricing concerns
+480,4.0,7.0,6.0,4.0,2.0,2.0,7.0,4.0,4.0,4.0,4.0,Enterprise,EMEA,2026-Q1,good
+481,4.0,4.0,4.0,4.0,6.0,4.0,3.0,3.0,3.0,3.0,6.0,SMB,North America,2026-Q1,slow onboarding
+482,4.0,3.0,5.0,6.0,3.0,3.0,5.0,5.0,4.0,3.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+483,3.0,7.0,4.0,3.0,6.0,4.0,6.0,4.0,4.0,2.0,4.0,Mid-Market,APAC,2026-Q1,good
+484,3.0,5.0,6.0,4.0,3.0,3.0,5.0,4.0,5.0,3.0,4.0,SMB,North America,2026-Q1,slow onboarding
+485,3.0,6.0,5.0,3.0,4.0,3.0,4.0,4.0,5.0,,6.0,Mid-Market,EMEA,2026-Q1,love support
+486,3.0,3.0,5.0,7.0,4.0,2.0,6.0,4.0,,,3.0,SMB,North America,2026-Q1,slow onboarding
+487,5.0,6.0,5.0,3.0,3.0,3.0,5.0,5.0,3.0,2.0,,Enterprise,North America,2026-Q1,love support
+488,4.0,5.0,6.0,3.0,4.0,2.0,4.0,,3.0,4.0,5.0,Mid-Market,APAC,2026-Q1,love support
+489,3.0,6.0,7.0,1.0,6.0,4.0,4.0,5.0,3.0,4.0,6.0,Mid-Market,North America,2026-Q1,pricing concerns
+490,5.0,5.0,5.0,3.0,5.0,5.0,6.0,4.0,6.0,2.0,4.0,Enterprise,APAC,2026-Q1,pricing concerns
+491,3.0,5.0,5.0,2.0,4.0,4.0,5.0,5.0,5.0,3.0,4.0,SMB,North America,2026-Q1,slow onboarding
+492,6.0,4.0,6.0,,3.0,5.0,3.0,5.0,4.0,5.0,6.0,Enterprise,North America,2026-Q1,slow onboarding
+493,5.0,6.0,6.0,3.0,4.0,4.0,4.0,3.0,,4.0,6.0,SMB,North America,2026-Q1,pricing concerns
+494,5.0,6.0,5.0,3.0,5.0,5.0,4.0,5.0,,4.0,4.0,Enterprise,APAC,2026-Q1,pricing concerns
+495,4.0,6.0,4.0,3.0,3.0,3.0,6.0,,3.0,,4.0,Mid-Market,North America,2026-Q1,slow onboarding
+496,4.0,7.0,6.0,,5.0,4.0,6.0,5.0,3.0,5.0,2.0,Mid-Market,North America,2026-Q1,pricing concerns
+497,3.0,5.0,5.0,2.0,4.0,5.0,7.0,1.0,3.0,4.0,5.0,SMB,North America,2026-Q1,love support
+498,4.0,6.0,6.0,3.0,4.0,4.0,6.0,,,3.0,3.0,SMB,EMEA,2026-Q1,pricing concerns
+499,4.0,7.0,3.0,2.0,5.0,5.0,4.0,3.0,3.0,5.0,4.0,Enterprise,EMEA,2026-Q1,love support
+500,,4.0,6.0,3.0,5.0,5.0,5.0,2.0,5.0,6.0,5.0,SMB,EMEA,2026-Q1,slow onboarding

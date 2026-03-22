@@ -1,0 +1,25 @@
+{
+  "target_column": "overall_sat",
+  "respondent_id_column": "response_id",
+  "segment_columns": ["segment", "region"],
+  "excluded_columns": ["survey_wave", "free_text_comment"],
+  "predictor_columns": [
+    "product_quality_score",
+    "ease_use_score",
+    "support_experience",
+    "value_for_money",
+    "onboarding_score",
+    "service_reliability",
+    "mobile_app_score",
+    "acct_mgmt_score",
+    "reporting_tools",
+    "integration_setup"
+  ],
+  "scale_metadata": {
+    "overall_sat": {"min": 1, "max": 7},
+    "product_quality_score": {"min": 1, "max": 7},
+    "ease_use_score": {"min": 1, "max": 7},
+    "support_experience": {"min": 1, "max": 7},
+    "value_for_money": {"min": 1, "max": 7}
+  }
+}
