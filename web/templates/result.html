@@ -10,7 +10,7 @@
     <section class="card">
       <div class="eyebrow">tundralis</div>
       <h1>Run complete</h1>
-      <p class="sub">{{ filename }}</p>
+      <p class="sub">{{ display_filename or filename }}</p>
       <div class="stats">
         <div class="stat"><span>Rows modeled</span><strong>{{ payload.input_summary.rows_modeled }}</strong></div>
         <div class="stat"><span>Predictors</span><strong>{{ payload.input_summary.predictor_columns|length }}</strong></div>

@@ -96,6 +96,14 @@ def _predictor_candidates(df, inferred_target: str | None) -> list[dict]:
     return candidates
 
 
+def _display_filename(filename: str) -> str:
+    raw_name = Path(filename).name
+    parts = raw_name.split("_", 1)
+    if len(parts) == 2 and len(parts[0]) == 12:
+        return parts[1]
+    return raw_name
+
+
 def _mapping_context(filename: str, *, job_id: str, recode_definitions: list[dict] | None = None, segment_definitions: list[dict] | None = None) -> dict:
     bundle = build_prep_bundle(
         UPLOAD_DIR / filename,
@@ -109,6 +117,7 @@ def _mapping_context(filename: str, *, job_id: str, recode_definitions: list[dic
     return {
         "job_id": job_id,
         "filename": filename,
+        "display_filename": _display_filename(filename),
         "columns": columns,
         "numeric_columns": numeric_columns,
         "inferred_target": inferred_target,
@@ -268,6 +277,7 @@ def run_job():
         "result.html",
         job_id=job_id,
         filename=filename,
+        display_filename=_display_filename(filename),
         payload=payload,
         logs=result.stdout,
         preview_images=preview_images,

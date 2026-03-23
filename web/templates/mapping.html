@@ -10,7 +10,7 @@
     <section class="card">
       <div class="eyebrow">tundralis</div>
       <h1>Review mapping</h1>
-      <p class="sub">File: <strong>{{ filename }}</strong></p>
+      <p class="sub">File: <strong>{{ display_filename or filename }}</strong></p>
       {% if error %}<div class="error">{{ error }}</div>{% endif %}
       <form action="/run" method="post" class="mapping-stack" id="mappingForm">
         <input type="hidden" name="job_id" value="{{ job_id }}">
@@ -20,10 +20,14 @@
 
         <div class="inspector-layout">
           <div class="mapping-main">
-            <div class="workflow-tabs">
-              <button type="button" class="workflow-tab active" data-tab="recode">1. Recode studio</button>
-              <button type="button" class="workflow-tab" data-tab="model">2. Outcome + predictors</button>
-              <button type="button" class="workflow-tab" data-tab="segment">3. Segment builder</button>
+            <div class="workflow-tabs" aria-label="Workflow progression">
+              <button type="button" class="workflow-tab active" data-tab="recode"><span class="workflow-step-dot"></span><span>Recode studio</span></button>
+              <span class="workflow-arrow" aria-hidden="true"></span>
+              <button type="button" class="workflow-tab" data-tab="model"><span class="workflow-step-dot"></span><span>Outcome + predictors</span></button>
+              <span class="workflow-arrow" aria-hidden="true"></span>
+              <button type="button" class="workflow-tab" data-tab="segment"><span class="workflow-step-dot"></span><span>Segment builder</span></button>
+              <span class="workflow-arrow" aria-hidden="true"></span>
+              <button type="button" class="workflow-tab" data-tab="confirm"><span class="workflow-step-dot"></span><span>Confirm + run</span></button>
             </div>
 
             <section class="card inner workflow-panel" data-panel="recode">
@@ -112,7 +116,7 @@
 
                 <div class="picker-toolbar">
                   <button type="button" class="button-link secondary" id="saveRecodeDefinition">Save transform</button>
-                  <button type="button" class="button-link secondary" id="goToModelTab">Continue to model setup</button>
+                  <button type="button" class="button-link secondary" id="goToModelTab">Continue to outcome + predictors</button>
                 </div>
 
                 <div id="recodeBuilderStatus" class="empty-state compact hidden"></div>
@@ -154,7 +158,7 @@
                   <button type="button" class="button-link secondary js-select-all">Select all</button>
                   <button type="button" class="button-link secondary js-clear-all">Clear all</button>
                   <button type="button" class="button-link secondary" id="backToRecodeTab">Back to recodes</button>
-                  <button type="button" class="button-link secondary" id="goToSegmentTab">Continue to segments</button>
+                  <button type="button" class="button-link secondary" id="goToSegmentTab">Continue to segment builder</button>
                 </div>
 
                 <div class="field-grid two predictor-package-layout">
@@ -224,6 +228,7 @@
                       <button type="button" class="button-link secondary" id="saveSegmentDefinition">Save simple segment</button>
                       <button type="button" class="button-link secondary" id="resetSegmentBuilder">Clear builder</button>
                       <button type="button" class="button-link secondary" id="backToModelTab">Back to model setup</button>
+                      <button type="button" class="button-link secondary" id="goToConfirmTab">Continue to confirmation</button>
                     </div>
 
                     <div id="segmentBuilderStatus" class="empty-state compact hidden"></div>
@@ -254,13 +259,76 @@
                 </div>
               </div>
             </section>
+
+            <section class="card inner workflow-panel hidden" data-panel="confirm">
+              <div class="section-head block">
+                <div>
+                  <h2>Confirm + run</h2>
+                  <p class="sub small">Final check before the model runs. Review the file, outcome, predictors, transforms, and segments here.</p>
+                </div>
+              </div>
+
+              <div class="field-grid two">
+                <div class="selected-item">
+                  <label class="field-label">File</label>
+                  <div class="mono" id="confirmFileName">{{ display_filename or filename }}</div>
+                </div>
+                <div class="selected-item">
+                  <label class="field-label">Outcome</label>
+                  <div class="mono" id="confirmOutcome">—</div>
+                </div>
+              </div>
+
+              <div class="field-grid three">
+                <div class="selected-item">
+                  <label class="field-label">Predictors</label>
+                  <strong id="confirmPredictorCount">0</strong>
+                </div>
+                <div class="selected-item">
+                  <label class="field-label">Transforms</label>
+                  <strong id="confirmRecodeCount">0</strong>
+                </div>
+                <div class="selected-item">
+                  <label class="field-label">Segments</label>
+                  <strong id="confirmSegmentCount">0</strong>
+                </div>
+              </div>
+
+              <div class="selected-item" id="confirmValidationCard">
+                <label class="field-label">Ready to run</label>
+                <div id="confirmValidationMessage" class="sub small">Checking inputs…</div>
+              </div>
+
+              <div class="field-grid three">
+                <div class="selected-item">
+                  <label class="field-label">Predictor package</label>
+                  <div class="selected-package" id="confirmPredictorList"></div>
+                </div>
+                <div class="selected-item">
+                  <label class="field-label">Saved transforms</label>
+                  <div class="selected-package" id="confirmRecodeList"></div>
+                </div>
+                <div class="selected-item">
+                  <label class="field-label">Saved segments</label>
+                  <div class="selected-package" id="confirmSegmentList"></div>
+                </div>
+              </div>
+
+              <div class="actions">
+                <button type="button" class="button-link secondary" id="backToSegmentFromConfirm">Back to segments</button>
+                <button type="submit" id="runKdaButton">Run KDA</button>
+              </div>
+            </section>
           </div>
 
-          <aside class="card inner inspector-panel">
+          <aside class="card inner inspector-panel" id="inspectorPanel">
             <div class="section-head block">
-              <div>
-                <h2>Column inspector</h2>
-                <p class="sub small">Click any column name from any step. The inspector stays usable while the main workflow scrolls.</p>
+              <div class="inspector-header-row">
+                <div>
+                  <h2>Column inspector</h2>
+                  <p class="sub small">Click any column name from any step. The inspector stays usable while the main workflow scrolls.</p>
+                </div>
+                <button type="button" class="button-link secondary inspector-toggle" id="toggleInspectorButton" aria-expanded="true">Collapse inspector</button>
               </div>
             </div>
 
@@ -294,7 +362,6 @@
           </aside>
         </div>
 
-        <div class="actions"><button type="submit">Run KDA</button></div>
       </form>
     </section>
   </main>
@@ -492,6 +559,18 @@
     const segmentColumnPicker = document.getElementById('segmentColumnPicker');
     const workflowTabs = Array.from(document.querySelectorAll('.workflow-tab'));
     const workflowPanels = Array.from(document.querySelectorAll('.workflow-panel'));
+    const inspectorPanel = document.getElementById('inspectorPanel');
+    const toggleInspectorButton = document.getElementById('toggleInspectorButton');
+    const confirmOutcome = document.getElementById('confirmOutcome');
+    const confirmPredictorCount = document.getElementById('confirmPredictorCount');
+    const confirmRecodeCount = document.getElementById('confirmRecodeCount');
+    const confirmSegmentCount = document.getElementById('confirmSegmentCount');
+    const confirmPredictorList = document.getElementById('confirmPredictorList');
+    const confirmRecodeList = document.getElementById('confirmRecodeList');
+    const confirmSegmentList = document.getElementById('confirmSegmentList');
+    const confirmValidationCard = document.getElementById('confirmValidationCard');
+    const confirmValidationMessage = document.getElementById('confirmValidationMessage');
+    const runKdaButton = document.getElementById('runKdaButton');
 
     function escapeHtml(value) {
       return String(value ?? '')
@@ -502,9 +581,58 @@
         .replaceAll("'", '&#39;');
     }
 
+    function confirmationIssues() {
+      const issues = [];
+      if (!targetColumnSelect.value) issues.push('Choose an outcome column.');
+      if (currentPredictorSelections().length === 0) issues.push('Select at least one predictor.');
+      const hasNonNumericPredictor = currentPredictorSelections().some((name) => !(columnProfiles[name]?.inferred_type || '').includes('numeric'));
+      if (hasNonNumericPredictor) issues.push('Remove or recode non-numeric predictors before running KDA.');
+      if (recodeConfigLocked) issues.push('Finish or unlock the transform currently being edited.');
+      if (draftRules.length > 0 || String(segmentName.value || '').trim()) issues.push('Save or clear the segment builder draft.');
+      return issues;
+    }
+
+    function updateStepAvailability() {
+      const issues = confirmationIssues();
+      workflowTabs.forEach((tab) => {
+        const tabName = tab.dataset.tab;
+        const enabled = tabName !== 'confirm' || issues.length === 0;
+        tab.classList.toggle('workflow-tab-disabled', !enabled);
+        tab.dataset.ready = enabled ? 'true' : 'false';
+      });
+      runKdaButton.disabled = issues.length > 0;
+      confirmValidationCard.className = `selected-item ${issues.length ? 'validation-card blocked' : 'validation-card ready'}`;
+      confirmValidationMessage.innerHTML = issues.length
+        ? `<ul class="validation-list">${issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join('')}</ul>`
+        : 'Everything required for this run is set. Send it.';
+      return issues;
+    }
+
+    function updateConfirmationPanel() {
+      const predictors = currentPredictorSelections();
+      confirmOutcome.textContent = targetColumnSelect.value || '—';
+      confirmPredictorCount.textContent = predictors.length;
+      confirmRecodeCount.textContent = savedRecodesState.length;
+      confirmSegmentCount.textContent = savedSegmentDefs.length;
+      confirmPredictorList.innerHTML = predictors.length
+        ? predictors.map((name) => `<div class="mono">${escapeHtml(name)}</div>`).join('')
+        : '<div class="empty-state compact">No predictors selected yet.</div>';
+      confirmRecodeList.innerHTML = savedRecodesState.length
+        ? savedRecodesState.map((recode) => `<div><strong>${escapeHtml(recode.output_column)}</strong><div class="sub small">${escapeHtml(recode.source_column)} · ${escapeHtml(recode.type)}</div></div>`).join('')
+        : '<div class="empty-state compact">No transforms saved.</div>';
+      confirmSegmentList.innerHTML = savedSegmentDefs.length
+        ? savedSegmentDefs.map((segment) => `<div><strong>${escapeHtml(segment.name)}</strong></div>`).join('')
+        : '<div class="empty-state compact">No segments saved.</div>';
+      updateStepAvailability();
+    }
+
     function setWorkflowTab(tabName) {
+      if (tabName === 'confirm' && confirmationIssues().length > 0) {
+        updateConfirmationPanel();
+      }
       workflowTabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === tabName));
       workflowPanels.forEach((panel) => panel.classList.toggle('hidden', panel.dataset.panel !== tabName));
+      if (tabName === 'confirm') updateConfirmationPanel();
     }
 
     function setStatus(el, message, tone = 'info') {
@@ -541,6 +669,7 @@
         renderMapDraft();
         renderBucketDraft();
       }
+      updateStepAvailability();
     }
 
     function warningLabel(warning) {
@@ -637,6 +766,7 @@
       bindColumnInspectorTriggers();
       bindPredictorCheckboxes();
       filterPredictorPicker();
+      updateStepAvailability();
     }
 
     function rebuildSegmentColumnsUI() {
@@ -717,6 +847,7 @@
       segmentRuleValue.value = '';
       renderDraftRules();
       setStatus(segmentBuilderStatus, '');
+      updateStepAvailability();
     }
 
     function loadSegmentIntoBuilder(segment, index) {
@@ -949,6 +1080,7 @@
       renderSegmentPreviews();
       renderSavedSegments();
       renderSavedRecodes();
+      updateConfirmationPanel();
       renderInspector(inspectorColumnSelect.value || targetColumnSelect.value || allDisplayColumns()[0]);
     }
 
@@ -1105,7 +1237,18 @@
       setStatus(segmentBuilderStatus, `Saved nested segment '${name}'.`, 'success');
     });
 
-    workflowTabs.forEach((tab) => tab.addEventListener('click', () => setWorkflowTab(tab.dataset.tab)));
+    function syncInspectorCollapse() {
+      const collapsed = inspectorPanel.classList.contains('collapsed');
+      toggleInspectorButton.textContent = collapsed ? 'Expand inspector' : 'Collapse inspector';
+      toggleInspectorButton.setAttribute('aria-expanded', String(!collapsed));
+    }
+
+    workflowTabs.forEach((tab) => tab.addEventListener('click', () => {
+      if (tab.dataset.tab === 'confirm' && confirmationIssues().length > 0) {
+        updateConfirmationPanel();
+      }
+      setWorkflowTab(tab.dataset.tab);
+    }));
     lockRecodeConfigButton?.addEventListener('click', () => {
       if (!selectedRecodeOutputName()) {
         setStatus(recodeBuilderStatus, 'New column name is required.', 'error');
@@ -1134,6 +1277,12 @@
     document.getElementById('backToRecodeTab')?.addEventListener('click', () => setWorkflowTab('recode'));
     document.getElementById('goToSegmentTab')?.addEventListener('click', () => setWorkflowTab('segment'));
     document.getElementById('backToModelTab')?.addEventListener('click', () => setWorkflowTab('model'));
+    document.getElementById('goToConfirmTab')?.addEventListener('click', () => setWorkflowTab('confirm'));
+    document.getElementById('backToSegmentFromConfirm')?.addEventListener('click', () => setWorkflowTab('segment'));
+    toggleInspectorButton?.addEventListener('click', () => {
+      inspectorPanel.classList.toggle('collapsed');
+      syncInspectorCollapse();
+    });
     document.getElementById('refreshPrepPreview')?.addEventListener('click', refreshPrepPreview);
     document.getElementById('resetSegmentTree')?.addEventListener('click', () => { segmentTreeState = createEmptyGroup('all'); renderSegmentTree(); });
     document.getElementById('resetSegmentBuilder')?.addEventListener('click', resetSegmentBuilder);
@@ -1144,6 +1293,7 @@
       currentTarget = targetColumnSelect.value;
       rebuildTargetDisplayInput();
       rebuildPredictorUI();
+      updateConfirmationPanel();
       renderInspector(currentTarget);
     });
     inspectOutcomeButton?.addEventListener('click', () => renderInspector(targetColumnSelect.value));
@@ -1179,6 +1329,8 @@
     renderSegmentTree();
     syncSegmentOperatorOptions(segmentRuleColumn.value);
     setRecodePanel(recodeType.value);
+    syncInspectorCollapse();
+    updateConfirmationPanel();
     renderInspector(inspectorColumnSelect.value || targetColumnSelect.value || allDisplayColumns()[0]);
   </script>
 </body>

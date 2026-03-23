@@ -9,6 +9,25 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class TestWebMapping(unittest.TestCase):
+    def test_inspect_renders_original_filename_without_job_prefix(self):
+        client = app.test_client()
+        csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
+
+        response = client.post(
+            "/inspect",
+            data={"survey_file": (io.BytesIO(csv_bytes), "Google Policy Measurement Weighted Data (Numeric) Ver 1.0.csv")},
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        self.assertIn("File: <strong>Google Policy Measurement Weighted Data (Numeric) Ver 1.0.csv</strong>", html)
+        marker = 'name="filename" value="'
+        start = html.index(marker) + len(marker)
+        stored_filename = html[start: html.index('"', start)]
+        self.assertNotEqual(stored_filename, "Google Policy Measurement Weighted Data (Numeric) Ver 1.0.csv")
+        self.assertTrue(stored_filename.endswith("_Google Policy Measurement Weighted Data (Numeric) Ver 1.0.csv"))
+
     def test_inspect_renders_column_inspector(self):
         client = app.test_client()
         csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
@@ -25,11 +44,15 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn("Recode studio", html)
         self.assertIn("Outcome + predictors", html)
         self.assertIn("Segment builder", html)
+        self.assertIn("Confirm + run", html)
+        self.assertIn("Ready to run", html)
+        self.assertIn("toggleInspectorButton", html)
         self.assertIn("inspectOutcomeButton", html)
         self.assertIn("Nested condition tree", html)
         self.assertIn("segmentTreeCanvas", html)
         self.assertIn("overall_sat", html)
         self.assertIn("high_cardinality", html)
+        self.assertIn("client_style_kda.csv", html)
 
     def test_preview_applies_recode_and_returns_segment_counts(self):
         client = app.test_client()
