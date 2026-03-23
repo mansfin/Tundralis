@@ -23,6 +23,9 @@ class TestWebMapping(unittest.TestCase):
         html = response.get_data(as_text=True)
         self.assertIn("Column inspector", html)
         self.assertIn("Recode studio", html)
+        self.assertIn("Outcome + predictors", html)
+        self.assertIn("Segment builder", html)
+        self.assertIn("inspectOutcomeButton", html)
         self.assertIn("overall_sat", html)
         self.assertIn("high_cardinality", html)
 

@@ -56,6 +56,17 @@ class TestTransforms(unittest.TestCase):
                 [{"type": "boolean_flag", "source_column": "x", "output_column": "x", "operator": "gt", "value": 1}],
             )
 
+    def test_rejects_multiple_recodes_to_same_output_column(self):
+        df = pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6]})
+        with self.assertRaises(ValueError):
+            apply_recode_transforms(
+                df,
+                [
+                    {"type": "boolean_flag", "source_column": "x", "output_column": "derived", "operator": "gt", "value": 1},
+                    {"type": "boolean_flag", "source_column": "y", "output_column": "derived", "operator": "gt", "value": 4},
+                ],
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

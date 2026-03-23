@@ -28,6 +28,7 @@ def _coerce_scalar(value: str):
 
 
 def validate_recode_definitions(recode_definitions: list[dict]) -> None:
+    seen_output_columns: set[str] = set()
     for idx, recode in enumerate(recode_definitions):
         recode_type = recode.get("type")
         source_column = recode.get("source_column")
@@ -40,6 +41,9 @@ def validate_recode_definitions(recode_definitions: list[dict]) -> None:
             raise ValueError(f"Recode #{idx + 1} is missing output_column")
         if source_column == output_column:
             raise ValueError(f"Recode #{idx + 1} output_column must differ from source_column")
+        if output_column in seen_output_columns:
+            raise ValueError(f"Recode output column already exists: {output_column}")
+        seen_output_columns.add(output_column)
 
         if recode_type == "map_values" and not recode.get("mapping"):
             raise ValueError(f"Recode #{idx + 1} map_values requires mapping")

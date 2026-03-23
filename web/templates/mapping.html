@@ -20,79 +20,19 @@
 
         <div class="inspector-layout">
           <div class="mapping-main">
-            <div class="card inner">
-              <h2>Outcome</h2>
-              <div class="field-grid two">
-                <div>
-                  <label class="field-label">Column name</label>
-                  <select name="target_column" id="targetColumnSelect" required>
-                    {% for col in numeric_columns %}
-                    <option value="{{ col }}" {% if col == inferred_target %}selected{% endif %}>{{ col }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <div>
-                  <label class="field-label">Display name in report</label>
-                  <input type="text" name="display_name__{{ inferred_target }}" placeholder="Optional display label" value="{{ inferred_target if inferred_target else '' }}">
-                </div>
-              </div>
+            <div class="workflow-tabs">
+              <button type="button" class="workflow-tab active" data-tab="recode">1. Recode studio</button>
+              <button type="button" class="workflow-tab" data-tab="model">2. Outcome + predictors</button>
+              <button type="button" class="workflow-tab" data-tab="segment">3. Segment builder</button>
             </div>
 
-            <div class="card inner">
+            <section class="card inner workflow-panel" data-panel="recode">
               <div class="section-head block">
                 <div>
-                  <h2>Predictor package</h2>
-                  <p class="sub small">Start empty. Add the variables you actually want in the model.</p>
+                  <h2>Recode studio</h2>
+                  <p class="sub small">Create derived variables first. The transformed dataset then feeds outcome selection, predictors, segments, and the column inspector.</p>
                 </div>
               </div>
-
-              <div class="picker-toolbar">
-                <button type="button" class="button-link secondary js-select-all">Select all</button>
-                <button type="button" class="button-link secondary js-clear-all">Clear all</button>
-              </div>
-
-              <div class="field-grid two predictor-package-layout">
-                <div>
-                  <label class="field-label">Available columns</label>
-                  <div class="picker-card">
-                    <input type="text" id="predictorSearch" class="search-input" placeholder="Filter columns...">
-                    <div class="picker-list" id="predictorPicker">
-                      {% for item in predictor_candidates %}
-                      <label class="picker-item js-inspect-column" data-col="{{ item.name|lower }}" data-column-name="{{ item.name }}">
-                        <input type="checkbox" name="predictor_columns" value="{{ item.name }}">
-                        <span class="mono">{{ item.name }}</span>
-                        <span class="pill {{ item.kind }}">{{ item.kind }}</span>
-                      </label>
-                      {% endfor %}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="field-label">Selected predictor package</label>
-                  <div class="selected-package" id="selectedPredictorPackage">
-                    {% for item in predictor_candidates %}
-                    <div class="selected-item hidden" data-selected-item="{{ item.name }}">
-                      <div class="selected-item-head">
-                        <span class="mono js-inspect-link" data-column-name="{{ item.name }}">{{ item.name }}</span>
-                        <span class="pill {{ item.kind }}">{{ item.kind }}</span>
-                      </div>
-                      <label class="field-label small">Display name in report</label>
-                      <input type="text" name="display_name__{{ item.name }}" placeholder="Optional display label" value="{{ item.name }}">
-                      {% if item.kind != 'numeric' %}
-                      <div class="segment-builder-note">This column is non-numeric. Next step: recode or dummy-code it before modeling.</div>
-                      {% endif %}
-                    </div>
-                    {% endfor %}
-                    <div class="empty-state" id="predictorEmptyState">No predictors selected yet.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="card inner">
-              <h2>Recode studio</h2>
-              <p class="sub small">Build lightweight runtime transforms on top of the uploaded file. These create new derived columns for this run.</p>
 
               <div class="picker-card">
                 <div class="field-grid three">
@@ -106,11 +46,7 @@
                   </div>
                   <div>
                     <label class="field-label small">Source column</label>
-                    <select id="recodeSourceColumn">
-                      {% for col in columns %}
-                      <option value="{{ col }}">{{ col }}</option>
-                      {% endfor %}
-                    </select>
+                    <select id="recodeSourceColumn"></select>
                   </div>
                   <div>
                     <label class="field-label small">New column name</label>
@@ -122,15 +58,9 @@
                   <div id="recodeMapValuesPanel" class="recode-panel">
                     <label class="field-label small">Value mapping</label>
                     <div class="field-grid three">
-                      <div>
-                        <input type="text" id="mapFromValue" placeholder="From value">
-                      </div>
-                      <div>
-                        <input type="text" id="mapToValue" placeholder="To value">
-                      </div>
-                      <div>
-                        <button type="button" class="button-link secondary" id="addMapRule">Add mapping row</button>
-                      </div>
+                      <div><input type="text" id="mapFromValue" placeholder="From value"></div>
+                      <div><input type="text" id="mapToValue" placeholder="To value"></div>
+                      <div><button type="button" class="button-link secondary" id="addMapRule">Add mapping row</button></div>
                     </div>
                     <div class="selected-package" id="mapRuleDraft"></div>
                   </div>
@@ -170,27 +100,77 @@
 
                 <div class="picker-toolbar">
                   <button type="button" class="button-link secondary" id="saveRecodeDefinition">Save transform</button>
+                  <button type="button" class="button-link secondary" id="goToModelTab">Continue to model setup</button>
                 </div>
 
+                <div id="recodeBuilderStatus" class="empty-state compact hidden"></div>
                 <div class="selected-package" id="savedRecodes"></div>
               </div>
-            </div>
+            </section>
 
-            <div class="card inner">
+            <section class="workflow-panel hidden" data-panel="model">
+              <div class="card inner">
+                <h2>Outcome</h2>
+                <div class="selected-item outcome-lock-card">
+                  <div class="selected-item-head">
+                    <span>Selected outcome</span>
+                    <span class="pill numeric">locked for this run</span>
+                  </div>
+                  <button type="button" class="button-link secondary outcome-inspect-trigger mono" id="inspectOutcomeButton">—</button>
+                </div>
+                <div class="field-grid two">
+                  <div>
+                    <label class="field-label">Column name</label>
+                    <select name="target_column" id="targetColumnSelect" required></select>
+                  </div>
+                  <div>
+                    <label class="field-label">Display name in report</label>
+                    <div id="targetDisplayNameContainer"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card inner">
+                <div class="section-head block">
+                  <div>
+                    <h2>Predictor package</h2>
+                    <p class="sub small">Choose predictors from the transformed dataset. Click any column name to inspect it.</p>
+                  </div>
+                </div>
+
+                <div class="picker-toolbar">
+                  <button type="button" class="button-link secondary js-select-all">Select all</button>
+                  <button type="button" class="button-link secondary js-clear-all">Clear all</button>
+                  <button type="button" class="button-link secondary" id="backToRecodeTab">Back to recodes</button>
+                  <button type="button" class="button-link secondary" id="goToSegmentTab">Continue to segments</button>
+                </div>
+
+                <div class="field-grid two predictor-package-layout">
+                  <div>
+                    <label class="field-label">Available columns</label>
+                    <div class="picker-card">
+                      <input type="text" id="predictorSearch" class="search-input" placeholder="Filter columns...">
+                      <div class="picker-list" id="predictorPicker"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="field-label">Selected predictor package</label>
+                    <div class="selected-package" id="selectedPredictorPackage"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card inner workflow-panel hidden" data-panel="segment">
               <h2>Segments</h2>
-              <p class="sub small">Create named segments against the transformed working dataframe. Supports saved simple rules or an advanced nested all/any tree.</p>
+              <p class="sub small">Build segments against the transformed dataset. Use the simple rule builder for most segments and the JSON tree for advanced nested logic.</p>
 
               <div class="field-grid two">
                 <div>
                   <label class="field-label">Available segment source columns</label>
                   <div class="picker-card">
-                    <div class="picker-list compact">
-                      {% for col in columns %}
-                      <label class="picker-item js-inspect-column" data-column-name="{{ col }}">
-                        <input type="checkbox" name="segment_columns" value="{{ col }}"> <span class="mono">{{ col }}</span>
-                      </label>
-                      {% endfor %}
-                    </div>
+                    <div class="picker-list compact" id="segmentColumnPicker"></div>
                   </div>
                 </div>
                 <div>
@@ -210,14 +190,10 @@
                       </div>
                     </div>
 
-                    <div class="field-grid three">
+                    <div class="field-grid four segment-rule-grid">
                       <div>
                         <label class="field-label small">Column</label>
-                        <select id="segmentRuleColumn">
-                          {% for col in columns %}
-                          <option value="{{ col }}">{{ col }}</option>
-                          {% endfor %}
-                        </select>
+                        <select id="segmentRuleColumn"></select>
                       </div>
                       <div>
                         <label class="field-label small">Operator</label>
@@ -227,12 +203,15 @@
                         <label class="field-label small">Value</label>
                         <input type="text" id="segmentRuleValue" placeholder="e.g. Enterprise or 7">
                       </div>
+                      <div class="segment-rule-action">
+                        <button type="button" class="button-link secondary" id="addSegmentRule">Add rule</button>
+                      </div>
                     </div>
 
                     <div class="picker-toolbar">
-                      <button type="button" class="button-link secondary" id="addSegmentRule">Add rule</button>
                       <button type="button" class="button-link secondary" id="saveSegmentDefinition">Save simple segment</button>
                       <button type="button" class="button-link secondary" id="resetSegmentBuilder">Clear builder</button>
+                      <button type="button" class="button-link secondary" id="backToModelTab">Back to model setup</button>
                     </div>
 
                     <div id="segmentBuilderStatus" class="empty-state compact hidden"></div>
@@ -250,24 +229,20 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
           <aside class="card inner inspector-panel">
             <div class="section-head block">
               <div>
                 <h2>Column inspector</h2>
-                <p class="sub small">Click any column name or choose one here.</p>
+                <p class="sub small">Click any column name from any step. The inspector stays usable while the main workflow scrolls.</p>
               </div>
             </div>
 
             <div>
               <label class="field-label">Inspect column</label>
-              <select id="inspectorColumnSelect">
-                {% for col in columns %}
-                <option value="{{ col }}" {% if col == inferred_target %}selected{% endif %}>{{ col }}</option>
-                {% endfor %}
-              </select>
+              <select id="inspectorColumnSelect"></select>
             </div>
 
             <div class="selected-item inspector-summary">
@@ -300,10 +275,17 @@
     </section>
   </main>
   <script>
-    let columnProfiles = {{ column_profiles | tojson }};
-    const searchInput = document.getElementById('predictorSearch');
-    const pickerItems = Array.from(document.querySelectorAll('.picker-item[data-col]'));
-    const emptyState = document.getElementById('predictorEmptyState');
+    let columnProfiles = {{ column_profiles | default({}, true) | tojson }};
+    let currentColumns = {{ columns | default([], true) | tojson }};
+    let currentNumericColumns = {{ numeric_columns | default([], true) | tojson }};
+    let currentTarget = {{ inferred_target | default('', true) | tojson }};
+    let draftRules = [];
+    let savedSegmentDefs = {{ normalized_segment_definitions | default([], true) | tojson }};
+    let segmentPreviewsState = {{ segment_previews | default([], true) | tojson }};
+    let savedRecodesState = [];
+    let draftMapRules = [];
+    let draftBucketRules = [];
+
     const segmentDefinitionsInput = document.getElementById('segmentDefinitionsInput');
     const recodeDefinitionsInput = document.getElementById('recodeDefinitionsInput');
     const segmentRuleDraft = document.getElementById('segmentRuleDraft');
@@ -316,8 +298,11 @@
     const segmentRuleValue = document.getElementById('segmentRuleValue');
     const segmentTreeJson = document.getElementById('segmentTreeJson');
     const segmentBuilderStatus = document.getElementById('segmentBuilderStatus');
+    const recodeBuilderStatus = document.getElementById('recodeBuilderStatus');
     const inspectorColumnSelect = document.getElementById('inspectorColumnSelect');
     const targetColumnSelect = document.getElementById('targetColumnSelect');
+    const targetDisplayNameContainer = document.getElementById('targetDisplayNameContainer');
+    const inspectOutcomeButton = document.getElementById('inspectOutcomeButton');
     const recodeType = document.getElementById('recodeType');
     const recodeSourceColumn = document.getElementById('recodeSourceColumn');
     const recodeOutputColumn = document.getElementById('recodeOutputColumn');
@@ -333,28 +318,174 @@
     const flagTrueValue = document.getElementById('flagTrueValue');
     const flagFalseValue = document.getElementById('flagFalseValue');
     const savedRecodes = document.getElementById('savedRecodes');
-    let draftRules = [];
-    let savedSegmentDefs = {{ normalized_segment_definitions | default([], true) | tojson }};
-    let segmentPreviewsState = {{ segment_previews | default([], true) | tojson }};
-    let savedRecodesState = [];
-    let draftMapRules = [];
-    let draftBucketRules = [];
+    const predictorSearch = document.getElementById('predictorSearch');
+    const predictorPicker = document.getElementById('predictorPicker');
+    const selectedPredictorPackage = document.getElementById('selectedPredictorPackage');
+    const segmentColumnPicker = document.getElementById('segmentColumnPicker');
+    const workflowTabs = Array.from(document.querySelectorAll('.workflow-tab'));
+    const workflowPanels = Array.from(document.querySelectorAll('.workflow-panel'));
 
-    function refreshSelectedPackage() {
-      let visibleCount = 0;
-      pickerItems.forEach((item) => {
-        const checkbox = item.querySelector('input[type="checkbox"]');
-        const col = checkbox.value;
-        const selected = document.querySelector(`[data-selected-item="${col}"]`);
-        if (!selected) return;
-        if (checkbox.checked) {
-          selected.classList.remove('hidden');
-          visibleCount += 1;
-        } else {
-          selected.classList.add('hidden');
-        }
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function setWorkflowTab(tabName) {
+      workflowTabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === tabName));
+      workflowPanels.forEach((panel) => panel.classList.toggle('hidden', panel.dataset.panel !== tabName));
+    }
+
+    function setStatus(el, message, tone = 'info') {
+      if (!message) {
+        el.className = 'empty-state compact hidden';
+        el.textContent = '';
+        return;
+      }
+      el.className = `segment-status ${tone}`;
+      el.textContent = message;
+    }
+
+    function warningLabel(warning) {
+      return warning.replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    function allDisplayColumns() {
+      return currentColumns.filter(Boolean);
+    }
+
+    function currentPredictorSelections() {
+      return Array.from(document.querySelectorAll('input[name="predictor_columns"]:checked')).map((el) => el.value);
+    }
+
+    function currentSegmentSelections() {
+      return Array.from(document.querySelectorAll('input[name="segment_columns"]:checked')).map((el) => el.value);
+    }
+
+    function rebuildTargetDisplayInput() {
+      const target = targetColumnSelect.value || currentTarget || '';
+      targetDisplayNameContainer.innerHTML = target
+        ? `<input type="text" name="display_name__${escapeHtml(target)}" placeholder="Optional display label" value="${escapeHtml(target)}">`
+        : '<div class="empty-state compact">No numeric outcome available.</div>';
+      inspectOutcomeButton.textContent = target || '—';
+      inspectOutcomeButton.dataset.columnName = target;
+    }
+
+    function rebuildInspectorOptions() {
+      const current = inspectorColumnSelect.value;
+      inspectorColumnSelect.innerHTML = allDisplayColumns().map((col) => `<option value="${escapeHtml(col)}">${escapeHtml(col)}</option>`).join('');
+      if (allDisplayColumns().includes(current)) {
+        inspectorColumnSelect.value = current;
+      } else if (allDisplayColumns().includes(targetColumnSelect.value)) {
+        inspectorColumnSelect.value = targetColumnSelect.value;
+      } else if (allDisplayColumns()[0]) {
+        inspectorColumnSelect.value = allDisplayColumns()[0];
+      }
+    }
+
+    function rebuildRecodeSourceOptions() {
+      const current = recodeSourceColumn.value;
+      recodeSourceColumn.innerHTML = allDisplayColumns().map((col) => `<option value="${escapeHtml(col)}">${escapeHtml(col)}</option>`).join('');
+      if (allDisplayColumns().includes(current)) {
+        recodeSourceColumn.value = current;
+      }
+    }
+
+    function predictorCandidates() {
+      return allDisplayColumns()
+        .filter((col) => col !== targetColumnSelect.value)
+        .map((col) => ({ name: col, kind: (columnProfiles[col]?.inferred_type || '').includes('numeric') ? 'numeric' : 'categorical' }));
+    }
+
+    function rebuildTargetOptions() {
+      const previous = targetColumnSelect.value || currentTarget;
+      targetColumnSelect.innerHTML = currentNumericColumns.map((col) => `<option value="${escapeHtml(col)}">${escapeHtml(col)}</option>`).join('');
+      if (currentNumericColumns.includes(previous)) {
+        targetColumnSelect.value = previous;
+      } else if (currentNumericColumns[0]) {
+        targetColumnSelect.value = currentNumericColumns[0];
+      }
+      currentTarget = targetColumnSelect.value;
+      rebuildTargetDisplayInput();
+    }
+
+    function rebuildPredictorUI() {
+      const selected = new Set(currentPredictorSelections());
+      const candidates = predictorCandidates();
+      predictorPicker.innerHTML = candidates.map((item) => `
+        <label class="picker-item js-inspect-column" data-col="${escapeHtml(item.name.toLowerCase())}" data-column-name="${escapeHtml(item.name)}">
+          <input type="checkbox" name="predictor_columns" value="${escapeHtml(item.name)}" ${selected.has(item.name) ? 'checked' : ''}>
+          <span class="mono">${escapeHtml(item.name)}</span>
+          <span class="pill ${item.kind}">${item.kind}</span>
+        </label>`).join('');
+
+      const selectedNames = currentPredictorSelections();
+      selectedPredictorPackage.innerHTML = selectedNames.length
+        ? selectedNames.map((name) => {
+            const kind = (columnProfiles[name]?.inferred_type || '').includes('numeric') ? 'numeric' : 'categorical';
+            return `
+              <div class="selected-item" data-selected-item="${escapeHtml(name)}">
+                <div class="selected-item-head">
+                  <button type="button" class="column-link mono js-inspect-link" data-column-name="${escapeHtml(name)}">${escapeHtml(name)}</button>
+                  <span class="pill ${kind}">${kind}</span>
+                </div>
+                <label class="field-label small">Display name in report</label>
+                <input type="text" name="display_name__${escapeHtml(name)}" placeholder="Optional display label" value="${escapeHtml(name)}">
+                ${kind !== 'numeric' ? '<div class="segment-builder-note">This column is non-numeric. Recode it before modeling if needed.</div>' : ''}
+              </div>`;
+          }).join('')
+        : '<div class="empty-state" id="predictorEmptyState">No predictors selected yet.</div>';
+
+      bindColumnInspectorTriggers();
+      bindPredictorCheckboxes();
+      filterPredictorPicker();
+    }
+
+    function rebuildSegmentColumnsUI() {
+      const selected = new Set(currentSegmentSelections());
+      segmentColumnPicker.innerHTML = allDisplayColumns().map((col) => `
+        <label class="picker-item js-inspect-column" data-column-name="${escapeHtml(col)}">
+          <input type="checkbox" name="segment_columns" value="${escapeHtml(col)}" ${selected.has(col) ? 'checked' : ''}>
+          <span class="mono">${escapeHtml(col)}</span>
+          <span class="pill ${(columnProfiles[col]?.inferred_type || '').includes('numeric') ? 'numeric' : 'categorical'}">${escapeHtml(columnProfiles[col]?.inferred_type || 'unknown')}</span>
+        </label>`).join('');
+      const previous = segmentRuleColumn.value;
+      segmentRuleColumn.innerHTML = allDisplayColumns().map((col) => `<option value="${escapeHtml(col)}">${escapeHtml(col)}</option>`).join('');
+      if (allDisplayColumns().includes(previous)) {
+        segmentRuleColumn.value = previous;
+      }
+      syncSegmentOperatorOptions(segmentRuleColumn.value);
+      bindColumnInspectorTriggers();
+    }
+
+    function bindPredictorCheckboxes() {
+      Array.from(document.querySelectorAll('input[name="predictor_columns"]')).forEach((el) => {
+        el.addEventListener('change', rebuildPredictorUI);
       });
-      emptyState.classList.toggle('hidden', visibleCount !== 0);
+    }
+
+    function bindColumnInspectorTriggers() {
+      document.querySelectorAll('.js-inspect-column, .js-inspect-link').forEach((el) => {
+        el.onclick = (event) => {
+          event.preventDefault();
+          const columnName = el.dataset.columnName;
+          if (columnName) {
+            renderInspector(columnName);
+            inspectorColumnSelect.value = columnName;
+          }
+        };
+      });
+    }
+
+    function filterPredictorPicker() {
+      const q = (predictorSearch.value || '').toLowerCase().trim();
+      Array.from(predictorPicker.querySelectorAll('.picker-item')).forEach((item) => {
+        const col = item.dataset.col || '';
+        item.classList.toggle('hidden', q && !col.includes(q));
+      });
     }
 
     function operatorOptionsForColumn(columnName) {
@@ -375,24 +506,12 @@
       syncSegmentValueInput();
     }
 
-    function setSegmentStatus(message, tone = 'info') {
-      if (!message) {
-        segmentBuilderStatus.className = 'empty-state compact hidden';
-        segmentBuilderStatus.textContent = '';
-        return;
-      }
-      segmentBuilderStatus.className = `segment-status ${tone}`;
-      segmentBuilderStatus.textContent = message;
-    }
-
     function syncSegmentValueInput() {
       const operator = segmentRuleOperator.value;
       const isNullOperator = ['is_null', 'not_null'].includes(operator);
       segmentRuleValue.disabled = isNullOperator;
       segmentRuleValue.placeholder = isNullOperator ? 'No value needed' : 'e.g. Enterprise or 7';
-      if (isNullOperator) {
-        segmentRuleValue.value = '';
-      }
+      if (isNullOperator) segmentRuleValue.value = '';
     }
 
     function resetSegmentBuilder() {
@@ -401,7 +520,7 @@
       segmentTreeJson.value = '';
       segmentRuleValue.value = '';
       renderDraftRules();
-      setSegmentStatus('');
+      setStatus(segmentBuilderStatus, '');
     }
 
     function loadSegmentIntoBuilder(segment, index) {
@@ -416,14 +535,16 @@
           segmentLogic.value = key === 'any' ? 'OR' : 'AND';
           segmentTreeJson.value = '';
           renderDraftRules();
-          setSegmentStatus(`Loaded segment ${index + 1} into the simple builder.`, 'info');
+          setStatus(segmentBuilderStatus, `Loaded segment ${index + 1} into the simple builder.`, 'info');
+          setWorkflowTab('segment');
           return;
         }
       }
       draftRules = [];
       renderDraftRules();
       segmentTreeJson.value = JSON.stringify(segment.tree || {}, null, 2);
-      setSegmentStatus(`Loaded segment ${index + 1} into advanced JSON.`, 'info');
+      setStatus(segmentBuilderStatus, `Loaded segment ${index + 1} into advanced JSON.`, 'info');
+      setWorkflowTab('segment');
     }
 
     function renderDraftRules() {
@@ -431,9 +552,10 @@
       draftRules.forEach((rule, idx) => {
         const el = document.createElement('div');
         el.className = 'selected-item';
-        el.innerHTML = `<div class="selected-item-head"><span>${rule.column} ${rule.operator}${rule.value !== undefined ? ` ${rule.value}` : ''}</span><button type="button" class="button-link secondary" data-remove-rule="${idx}">Remove</button></div>`;
+        el.innerHTML = `<div class="selected-item-head"><button type="button" class="column-link js-inspect-link" data-column-name="${escapeHtml(rule.column)}">${escapeHtml(rule.column)}</button><button type="button" class="button-link secondary" data-remove-rule="${idx}">Remove</button></div><div>${escapeHtml(rule.operator)}${rule.value !== undefined ? ` ${escapeHtml(rule.value)}` : ''}</div>`;
         segmentRuleDraft.appendChild(el);
       });
+      bindColumnInspectorTriggers();
       document.querySelectorAll('[data-remove-rule]').forEach((btn) => {
         btn.addEventListener('click', () => {
           draftRules.splice(Number(btn.dataset.removeRule), 1);
@@ -449,13 +571,13 @@
         el.className = 'selected-item';
         el.innerHTML = `
           <div class="selected-item-head">
-            <span>${seg.name}</span>
+            <span>${escapeHtml(seg.name)}</span>
             <div class="inline-actions">
               <button type="button" class="button-link secondary" data-edit-segment="${idx}">Edit</button>
               <button type="button" class="button-link secondary" data-remove-segment="${idx}">Remove</button>
             </div>
           </div>
-          <pre>${JSON.stringify(seg.tree, null, 2)}</pre>
+          <pre>${escapeHtml(JSON.stringify(seg.tree, null, 2))}</pre>
         `;
         savedSegments.appendChild(el);
       });
@@ -463,7 +585,6 @@
       document.querySelectorAll('[data-remove-segment]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           savedSegmentDefs.splice(Number(btn.dataset.removeSegment), 1);
-          segmentDefinitionsInput.value = JSON.stringify(savedSegmentDefs);
           renderSavedSegments();
           await refreshPrepPreview();
         });
@@ -479,11 +600,11 @@
     }
 
     function renderMapDraft() {
-      mapRuleDraft.innerHTML = draftMapRules.length ? '<div class="empty-state compact">No mapping rows yet.</div>' : '';
+      mapRuleDraft.innerHTML = draftMapRules.length ? '' : '<div class="empty-state compact">No mapping rows yet.</div>';
       draftMapRules.forEach((rule, idx) => {
         const el = document.createElement('div');
         el.className = 'selected-item';
-        el.innerHTML = `<div class="selected-item-head"><span>${rule.from} → ${rule.to}</span><button type="button" class="button-link secondary" data-remove-map="${idx}">Remove</button></div>`;
+        el.innerHTML = `<div class="selected-item-head"><span>${escapeHtml(rule.from)} → ${escapeHtml(rule.to)}</span><button type="button" class="button-link secondary" data-remove-map="${idx}">Remove</button></div>`;
         mapRuleDraft.appendChild(el);
       });
       document.querySelectorAll('[data-remove-map]').forEach((btn) => {
@@ -495,13 +616,13 @@
     }
 
     function renderBucketDraft() {
-      bucketRuleDraft.innerHTML = draftBucketRules.length ? '<div class="empty-state compact">No bucket rows yet.</div>' : '';
+      bucketRuleDraft.innerHTML = draftBucketRules.length ? '' : '<div class="empty-state compact">No bucket rows yet.</div>';
       draftBucketRules.forEach((rule, idx) => {
         const minLabel = rule.min === '' ? '-∞' : rule.min;
         const maxLabel = rule.max === '' ? '+∞' : rule.max;
         const el = document.createElement('div');
         el.className = 'selected-item';
-        el.innerHTML = `<div class="selected-item-head"><span>${rule.label}: ${minLabel} to ${maxLabel}</span><button type="button" class="button-link secondary" data-remove-bucket="${idx}">Remove</button></div>`;
+        el.innerHTML = `<div class="selected-item-head"><span>${escapeHtml(rule.label)}: ${escapeHtml(minLabel)} to ${escapeHtml(maxLabel)}</span><button type="button" class="button-link secondary" data-remove-bucket="${idx}">Remove</button></div>`;
         bucketRuleDraft.appendChild(el);
       });
       document.querySelectorAll('[data-remove-bucket]').forEach((btn) => {
@@ -515,38 +636,12 @@
     function renderSegmentPreviews() {
       segmentPreviewList.innerHTML = segmentPreviewsState.length ? '' : '<div class="empty-state">No segment previews yet.</div>';
       segmentPreviewsState.forEach((segment) => {
-        const warningHtml = (segment.warnings || []).length
-          ? `<div class="warning-list">${segment.warnings.map((warning) => `<span class="warning-pill">${warningLabel(warning)}</span>`).join('')}</div>`
-          : '';
+        const warningHtml = (segment.warnings || []).length ? `<div class="warning-list">${segment.warnings.map((warning) => `<span class="warning-pill">${warningLabel(warning)}</span>`).join('')}</div>` : '';
         const el = document.createElement('div');
         el.className = 'selected-item';
-        el.innerHTML = `<div class="selected-item-head"><span>${segment.name}</span><span>${segment.matched_count} rows · ${segment.matched_pct}%</span></div>${warningHtml}`;
+        el.innerHTML = `<div class="selected-item-head"><span>${escapeHtml(segment.name)}</span><span>${segment.matched_count} rows · ${segment.matched_pct}%</span></div>${warningHtml}`;
         segmentPreviewList.appendChild(el);
       });
-    }
-
-    async function refreshPrepPreview() {
-      const response = await fetch('/preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job_id: document.querySelector('input[name="job_id"]').value,
-          filename: document.querySelector('input[name="filename"]').value,
-          recode_definitions: savedRecodesState,
-          segment_definitions: savedSegmentDefs,
-        }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setSegmentStatus(payload.error || 'Preview refresh failed.', 'error');
-        return false;
-      }
-      columnProfiles = payload.column_profiles || columnProfiles;
-      segmentPreviewsState = payload.segment_previews || [];
-      renderSegmentPreviews();
-      renderInspector(inspectorColumnSelect.value || targetColumnSelect.value);
-      setSegmentStatus(segmentPreviewsState.length ? 'Segment previews refreshed.' : '', 'success');
-      return true;
     }
 
     function renderSavedRecodes() {
@@ -556,15 +651,16 @@
         el.className = 'selected-item';
         let detail = '';
         if (recode.type === 'map_values') {
-          detail = Object.entries(recode.mapping || {}).map(([k, v]) => `${k} → ${v}`).join('<br>');
+          detail = Object.entries(recode.mapping || {}).map(([k, v]) => `${escapeHtml(k)} → ${escapeHtml(v)}`).join('<br>');
         } else if (recode.type === 'bucket_numeric') {
-          detail = (recode.bins || []).map((b) => `${b.label}: ${b.min ?? '-∞'} to ${b.max ?? '+∞'}`).join('<br>');
+          detail = (recode.bins || []).map((b) => `${escapeHtml(b.label)}: ${b.min ?? '-∞'} to ${b.max ?? '+∞'}`).join('<br>');
         } else {
-          detail = `${recode.operator} ${recode.value} → ${String(recode.true_value)} / ${String(recode.false_value)}`;
+          detail = `${escapeHtml(recode.operator)} ${escapeHtml(recode.value)} → ${escapeHtml(String(recode.true_value))} / ${escapeHtml(String(recode.false_value))}`;
         }
-        el.innerHTML = `<div class="selected-item-head"><span>${recode.output_column} ← ${recode.source_column} <span class="pill categorical">${recode.type}</span></span><button type="button" class="button-link secondary" data-remove-recode="${idx}">Remove</button></div><div>${detail}</div>`;
+        el.innerHTML = `<div class="selected-item-head"><button type="button" class="column-link js-inspect-link" data-column-name="${escapeHtml(recode.output_column)}">${escapeHtml(recode.output_column)}</button><button type="button" class="button-link secondary" data-remove-recode="${idx}">Remove</button></div><div class="sub small">${escapeHtml(recode.source_column)} · ${escapeHtml(recode.type)}</div><div>${detail}</div>`;
         savedRecodes.appendChild(el);
       });
+      bindColumnInspectorTriggers();
       document.querySelectorAll('[data-remove-recode]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           savedRecodesState.splice(Number(btn.dataset.removeRecode), 1);
@@ -579,13 +675,7 @@
       document.getElementById('recodeMapValuesPanel').classList.toggle('hidden', type !== 'map_values');
       document.getElementById('recodeBucketPanel').classList.toggle('hidden', type !== 'bucket_numeric');
       document.getElementById('recodeFlagPanel').classList.toggle('hidden', type !== 'boolean_flag');
-      renderInspector(recodeSourceColumn.value);
-    }
-
-    function warningLabel(warning) {
-      return warning
-        .replaceAll('_', ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+      renderInspector(recodeSourceColumn.value || targetColumnSelect.value);
     }
 
     function renderInspector(columnName) {
@@ -608,70 +698,65 @@
             <div class="metric-card"><span>Max</span><strong>${profile.numeric_summary.max}</strong></div>
             <div class="metric-card"><span>Mean</span><strong>${profile.numeric_summary.mean}</strong></div>
             <div class="metric-card"><span>Median</span><strong>${profile.numeric_summary.median}</strong></div>
-          </div>
-        `;
+          </div>`;
       } else {
         numericSummary.classList.add('hidden');
         numericSummary.innerHTML = '';
       }
 
       const warnings = document.getElementById('inspectorWarnings');
-      warnings.innerHTML = '';
-      if ((profile.warnings || []).length === 0) {
-        warnings.innerHTML = '<div class="empty-state compact">No warnings.</div>';
-      } else {
-        profile.warnings.forEach((warning) => {
-          const pill = document.createElement('span');
-          pill.className = 'warning-pill';
-          pill.textContent = warningLabel(warning);
-          warnings.appendChild(pill);
-        });
-      }
+      warnings.innerHTML = (profile.warnings || []).length
+        ? profile.warnings.map((warning) => `<span class="warning-pill">${warningLabel(warning)}</span>`).join('')
+        : '<div class="empty-state compact">No warnings.</div>';
 
       const topValues = document.getElementById('inspectorTopValues');
-      if ((profile.top_values || []).length === 0) {
-        topValues.innerHTML = '<div class="empty-state compact">No non-null values to preview.</div>';
-      } else {
-        topValues.innerHTML = `
-          <table class="value-table">
-            <thead><tr><th>Value</th><th>Count</th><th>%</th></tr></thead>
-            <tbody>
-              ${profile.top_values.map((row) => `<tr><td>${row.value}</td><td>${row.count}</td><td>${row.pct}%</td></tr>`).join('')}
-            </tbody>
-          </table>
-        `;
-      }
+      topValues.innerHTML = (profile.top_values || []).length
+        ? `<table class="value-table"><thead><tr><th>Value</th><th>Count</th><th>%</th></tr></thead><tbody>${profile.top_values.map((row) => `<tr><td>${escapeHtml(row.value)}</td><td>${row.count}</td><td>${row.pct}%</td></tr>`).join('')}</tbody></table>`
+        : '<div class="empty-state compact">No non-null values to preview.</div>';
 
-      if (inspectorColumnSelect.value !== columnName) {
-        inspectorColumnSelect.value = columnName;
-      }
+      if (inspectorColumnSelect.value !== columnName) inspectorColumnSelect.value = columnName;
     }
 
-    pickerItems.forEach((item) => {
-      item.querySelector('input[type="checkbox"]').addEventListener('change', refreshSelectedPackage);
-    });
+    function syncUiFromPreviewPayload(payload) {
+      currentColumns = payload.columns || currentColumns;
+      currentNumericColumns = payload.numeric_columns || currentNumericColumns;
+      columnProfiles = payload.column_profiles || columnProfiles;
+      savedSegmentDefs = payload.normalized_segment_definitions || savedSegmentDefs;
+      segmentDefinitionsInput.value = JSON.stringify(savedSegmentDefs);
+      segmentPreviewsState = payload.segment_previews || [];
+      rebuildTargetOptions();
+      rebuildInspectorOptions();
+      rebuildRecodeSourceOptions();
+      rebuildPredictorUI();
+      rebuildSegmentColumnsUI();
+      renderSegmentPreviews();
+      renderSavedSegments();
+      renderSavedRecodes();
+      renderInspector(inspectorColumnSelect.value || targetColumnSelect.value || allDisplayColumns()[0]);
+    }
 
-    document.querySelectorAll('.js-inspect-column, .js-inspect-link').forEach((el) => {
-      el.addEventListener('click', () => renderInspector(el.dataset.columnName));
-    });
-
-    document.querySelector('.js-select-all')?.addEventListener('click', () => {
-      pickerItems.forEach((item) => { item.querySelector('input[type="checkbox"]').checked = true; });
-      refreshSelectedPackage();
-    });
-
-    document.querySelector('.js-clear-all')?.addEventListener('click', () => {
-      pickerItems.forEach((item) => { item.querySelector('input[type="checkbox"]').checked = false; });
-      refreshSelectedPackage();
-    });
-
-    searchInput?.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      pickerItems.forEach((item) => {
-        const col = item.dataset.col || '';
-        item.classList.toggle('hidden', q && !col.includes(q));
+    async function refreshPrepPreview() {
+      const response = await fetch('/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_id: document.querySelector('input[name="job_id"]').value,
+          filename: document.querySelector('input[name="filename"]').value,
+          recode_definitions: savedRecodesState,
+          segment_definitions: savedSegmentDefs,
+        }),
       });
-    });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setStatus(segmentBuilderStatus, payload.error || 'Preview refresh failed.', 'error');
+        setStatus(recodeBuilderStatus, payload.error || 'Preview refresh failed.', 'error');
+        return false;
+      }
+      syncUiFromPreviewPayload(payload);
+      setStatus(segmentBuilderStatus, segmentPreviewsState.length ? 'Segment previews refreshed.' : '', 'success');
+      setStatus(recodeBuilderStatus, currentColumns.length ? 'Transformed dataset refreshed.' : '', 'success');
+      return true;
+    }
 
     document.getElementById('addMapRule')?.addEventListener('click', () => {
       const from = mapFromValue.value.trim();
@@ -697,23 +782,33 @@
       const type = recodeType.value;
       const source_column = recodeSourceColumn.value;
       const output_column = recodeOutputColumn.value.trim();
-      if (!output_column) return;
+      if (!output_column) {
+        setStatus(recodeBuilderStatus, 'New column name is required.', 'error');
+        return;
+      }
+      if (allDisplayColumns().includes(output_column) || savedRecodesState.some((item) => item.output_column === output_column)) {
+        setStatus(recodeBuilderStatus, `Column '${output_column}' already exists.`, 'error');
+        return;
+      }
 
       let payload = { type, source_column, output_column };
       if (type === 'map_values') {
-        if (draftMapRules.length === 0) return;
+        if (draftMapRules.length === 0) {
+          setStatus(recodeBuilderStatus, 'Add at least one mapping row.', 'error');
+          return;
+        }
         payload.mapping = Object.fromEntries(draftMapRules.map((row) => [row.from, row.to]));
       } else if (type === 'bucket_numeric') {
-        if (draftBucketRules.length === 0) return;
-        payload.bins = draftBucketRules.map((row) => ({
-          min: row.min === '' ? null : Number(row.min),
-          max: row.max === '' ? null : Number(row.max),
-          label: row.label,
-          include_min: true,
-          include_max: true,
-        }));
+        if (draftBucketRules.length === 0) {
+          setStatus(recodeBuilderStatus, 'Add at least one bucket.', 'error');
+          return;
+        }
+        payload.bins = draftBucketRules.map((row) => ({ min: row.min === '' ? null : Number(row.min), max: row.max === '' ? null : Number(row.max), label: row.label, include_min: true, include_max: true }));
       } else {
-        if (!flagValue.value.trim()) return;
+        if (!flagValue.value.trim()) {
+          setStatus(recodeBuilderStatus, 'Flag value is required.', 'error');
+          return;
+        }
         payload.operator = flagOperator.value;
         payload.value = flagValue.value.trim();
         payload.true_value = flagTrueValue.value.trim() || true;
@@ -731,7 +826,8 @@
       renderMapDraft();
       renderBucketDraft();
       renderSavedRecodes();
-      await refreshPrepPreview();
+      const ok = await refreshPrepPreview();
+      if (ok) setStatus(recodeBuilderStatus, `Saved transform '${output_column}'.`, 'success');
     });
 
     document.getElementById('addSegmentRule')?.addEventListener('click', () => {
@@ -739,13 +835,13 @@
       const value = segmentRuleValue.value.trim();
       const inferredType = columnProfiles[segmentRuleColumn.value]?.inferred_type || 'categorical';
       if (['gt', 'gte', 'lt', 'lte'].includes(operator) && !inferredType.includes('numeric')) {
-        setSegmentStatus(`Operator '${operator}' requires a numeric column.`, 'error');
+        setStatus(segmentBuilderStatus, `Operator '${operator}' requires a numeric column.`, 'error');
         return;
       }
       const rule = { column: segmentRuleColumn.value, operator, value_type: inferredType.includes('numeric') ? 'numeric' : 'categorical' };
       if (!['is_null', 'not_null'].includes(operator)) {
         if (!value) {
-          setSegmentStatus('Rule value is required.', 'error');
+          setStatus(segmentBuilderStatus, 'Rule value is required.', 'error');
           return;
         }
         rule.value = value;
@@ -754,13 +850,13 @@
       segmentRuleValue.value = '';
       renderDraftRules();
       renderInspector(segmentRuleColumn.value);
-      setSegmentStatus('Rule added.', 'success');
+      setStatus(segmentBuilderStatus, 'Rule added.', 'success');
     });
 
     document.getElementById('saveSegmentDefinition')?.addEventListener('click', async () => {
       const name = segmentName.value.trim();
       if (!name || draftRules.length === 0) {
-        setSegmentStatus('Segment name and at least one rule are required.', 'error');
+        setStatus(segmentBuilderStatus, 'Segment name and at least one rule are required.', 'error');
         return;
       }
       const key = segmentLogic.value === 'OR' ? 'any' : 'all';
@@ -773,21 +869,19 @@
         return;
       }
       resetSegmentBuilder();
-      setSegmentStatus(`Saved segment '${name}'.`, 'success');
+      setStatus(segmentBuilderStatus, `Saved segment '${name}'.`, 'success');
     });
 
     document.getElementById('saveAdvancedSegmentDefinition')?.addEventListener('click', async () => {
       const name = segmentName.value.trim();
       const raw = segmentTreeJson.value.trim();
       if (!name || !raw) {
-        setSegmentStatus('Segment name and advanced JSON are required.', 'error');
+        setStatus(segmentBuilderStatus, 'Segment name and advanced JSON are required.', 'error');
         return;
       }
       let tree;
-      try {
-        tree = JSON.parse(raw);
-      } catch (error) {
-        setSegmentStatus('Advanced segment JSON is invalid.', 'error');
+      try { tree = JSON.parse(raw); } catch (error) {
+        setStatus(segmentBuilderStatus, 'Advanced segment JSON is invalid.', 'error');
         return;
       }
       savedSegmentDefs.push({ name, tree });
@@ -799,23 +893,46 @@
         return;
       }
       resetSegmentBuilder();
-      setSegmentStatus(`Saved advanced segment '${name}'.`, 'success');
+      setStatus(segmentBuilderStatus, `Saved advanced segment '${name}'.`, 'success');
     });
 
+    workflowTabs.forEach((tab) => tab.addEventListener('click', () => setWorkflowTab(tab.dataset.tab)));
+    document.getElementById('goToModelTab')?.addEventListener('click', () => setWorkflowTab('model'));
+    document.getElementById('backToRecodeTab')?.addEventListener('click', () => setWorkflowTab('recode'));
+    document.getElementById('goToSegmentTab')?.addEventListener('click', () => setWorkflowTab('segment'));
+    document.getElementById('backToModelTab')?.addEventListener('click', () => setWorkflowTab('model'));
     document.getElementById('refreshPrepPreview')?.addEventListener('click', refreshPrepPreview);
     document.getElementById('resetSegmentBuilder')?.addEventListener('click', resetSegmentBuilder);
-
     recodeType?.addEventListener('change', (e) => setRecodePanel(e.target.value));
     recodeSourceColumn?.addEventListener('change', (e) => renderInspector(e.target.value));
     inspectorColumnSelect?.addEventListener('change', (e) => renderInspector(e.target.value));
-    targetColumnSelect?.addEventListener('change', (e) => renderInspector(e.target.value));
+    targetColumnSelect?.addEventListener('change', () => {
+      currentTarget = targetColumnSelect.value;
+      rebuildTargetDisplayInput();
+      rebuildPredictorUI();
+      renderInspector(currentTarget);
+    });
+    inspectOutcomeButton?.addEventListener('click', () => renderInspector(targetColumnSelect.value));
     segmentRuleColumn?.addEventListener('change', (e) => {
       syncSegmentOperatorOptions(e.target.value);
       renderInspector(e.target.value);
     });
     segmentRuleOperator?.addEventListener('change', syncSegmentValueInput);
+    predictorSearch?.addEventListener('input', filterPredictorPicker);
+    document.querySelector('.js-select-all')?.addEventListener('click', () => {
+      Array.from(document.querySelectorAll('input[name="predictor_columns"]')).forEach((el) => { el.checked = true; });
+      rebuildPredictorUI();
+    });
+    document.querySelector('.js-clear-all')?.addEventListener('click', () => {
+      Array.from(document.querySelectorAll('input[name="predictor_columns"]')).forEach((el) => { el.checked = false; });
+      rebuildPredictorUI();
+    });
 
-    refreshSelectedPackage();
+    rebuildTargetOptions();
+    rebuildInspectorOptions();
+    rebuildRecodeSourceOptions();
+    rebuildPredictorUI();
+    rebuildSegmentColumnsUI();
     renderDraftRules();
     renderSavedSegments();
     renderSegmentPreviews();
@@ -824,7 +941,7 @@
     renderSavedRecodes();
     syncSegmentOperatorOptions(segmentRuleColumn.value);
     setRecodePanel(recodeType.value);
-    renderInspector(inspectorColumnSelect.value || targetColumnSelect.value);
+    renderInspector(inspectorColumnSelect.value || targetColumnSelect.value || allDisplayColumns()[0]);
   </script>
 </body>
 </html>
