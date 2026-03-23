@@ -38,15 +38,13 @@ class TestTransforms(unittest.TestCase):
                 "output_column": "is_apac",
                 "operator": "equals",
                 "value": "APAC",
-                "true_value": "yes",
-                "false_value": "no",
             },
         ]
 
         transformed = apply_recode_transforms(df, recodes)
         self.assertEqual(transformed["segment_group"].tolist()[:3], ["Commercial", "Enterprise", "Commercial"])
         self.assertEqual(transformed["overall_sat_bucket"].tolist(), ["Low", "High", "Mid", "Low"])
-        self.assertEqual(transformed["is_apac"].tolist(), ["yes", "no", "no", "yes"])
+        self.assertEqual(transformed["is_apac"].tolist(), [1, 0, 0, 1])
 
     def test_rejects_duplicate_output_column(self):
         df = pd.DataFrame({"x": [1, 2, 3]})

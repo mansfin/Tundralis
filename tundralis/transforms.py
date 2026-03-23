@@ -87,8 +87,8 @@ def _apply_bucket_numeric(series: pd.Series, recode: dict) -> pd.Series:
 def _apply_boolean_flag(series: pd.Series, recode: dict) -> pd.Series:
     operator = recode.get("operator")
     value = _coerce_scalar(recode.get("value"))
-    output_true = recode.get("true_value", True)
-    output_false = recode.get("false_value", False)
+    output_true = 1
+    output_false = 0
 
     if operator in {"gt", "gte", "lt", "lte"}:
         left = pd.to_numeric(series, errors="coerce")
