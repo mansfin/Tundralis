@@ -21,19 +21,19 @@
         <div class="inspector-layout">
           <div class="mapping-main">
             <div class="workflow-tabs" aria-label="Workflow progression">
-              <button type="button" class="workflow-tab active" data-tab="recode"><span class="workflow-step-dot"></span><span>Recode studio</span></button>
+              <button type="button" class="workflow-tab active" data-tab="recode"><span class="workflow-step-dot"></span><span>Data shaping</span></button>
               <span class="workflow-arrow" aria-hidden="true"></span>
-              <button type="button" class="workflow-tab" data-tab="model"><span class="workflow-step-dot"></span><span>Outcome + predictors</span></button>
+              <button type="button" class="workflow-tab" data-tab="model"><span class="workflow-step-dot"></span><span>Analysis setup</span></button>
               <span class="workflow-arrow" aria-hidden="true"></span>
               <button type="button" class="workflow-tab" data-tab="segment"><span class="workflow-step-dot"></span><span>Segment builder</span></button>
               <span class="workflow-arrow" aria-hidden="true"></span>
-              <button type="button" class="workflow-tab" data-tab="confirm"><span class="workflow-step-dot"></span><span>Confirm + run</span></button>
+              <button type="button" class="workflow-tab" data-tab="confirm"><span class="workflow-step-dot"></span><span>Review + run</span></button>
             </div>
 
             <section class="card inner workflow-panel" data-panel="recode">
               <div class="section-head block">
                 <div>
-                  <h2>Recode studio</h2>
+                  <h2>Data shaping</h2>
                   <p class="sub small">Create derived variables first. The transformed dataset then feeds outcome selection, predictors, segments, and the column inspector.</p>
                 </div>
               </div>
@@ -114,9 +114,9 @@
                   </div>
                 </div>
 
-                <div class="picker-toolbar">
-                  <button type="button" class="button-link secondary" id="saveRecodeDefinition">Save transform</button>
-                  <button type="button" class="button-link secondary" id="goToModelTab">Continue to outcome + predictors</button>
+                <div class="actions module-actions">
+                  <button type="button" class="button-link" id="saveRecodeDefinition">Save transform</button>
+                  <button type="button" class="button-link" id="goToModelTab">Continue to analysis setup</button>
                 </div>
 
                 <div id="recodeBuilderStatus" class="empty-state compact hidden"></div>
@@ -154,13 +154,6 @@
                   </div>
                 </div>
 
-                <div class="picker-toolbar">
-                  <button type="button" class="button-link secondary js-select-all">Select all</button>
-                  <button type="button" class="button-link secondary js-clear-all">Clear all</button>
-                  <button type="button" class="button-link secondary" id="backToRecodeTab">Back to recodes</button>
-                  <button type="button" class="button-link secondary" id="goToSegmentTab">Continue to segment builder</button>
-                </div>
-
                 <div class="field-grid two predictor-package-layout">
                   <div>
                     <label class="field-label">Available columns</label>
@@ -175,6 +168,13 @@
                     <div class="selected-package" id="selectedPredictorPackage"></div>
                   </div>
                 </div>
+
+                <div class="actions module-actions">
+                  <button type="button" class="button-link js-select-all">Select all</button>
+                  <button type="button" class="button-link js-clear-all">Clear all</button>
+                  <button type="button" class="button-link" id="backToRecodeTab">Back to data shaping</button>
+                  <button type="button" class="button-link" id="goToSegmentTab">Continue to segment builder</button>
+                </div>
               </div>
             </section>
 
@@ -182,16 +182,9 @@
               <h2>Segments</h2>
               <p class="sub small">Build segments against the transformed dataset. Use the simple rule builder for most segments and the JSON tree for advanced nested logic.</p>
 
-              <div class="field-grid two">
-                <div>
-                  <label class="field-label">Available segment source columns</label>
-                  <div class="picker-card">
-                    <div class="picker-list compact" id="segmentColumnPicker"></div>
-                  </div>
-                </div>
-                <div>
-                  <label class="field-label">Segment builder</label>
-                  <div class="picker-card">
+              <div>
+                <label class="field-label">Segment builder</label>
+                <div class="picker-card">
                     <div class="field-grid two">
                       <div>
                         <label class="field-label small">Segment name</label>
@@ -209,6 +202,7 @@
                     <div class="field-grid four segment-rule-grid">
                       <div>
                         <label class="field-label small">Column</label>
+                        <input type="text" id="segmentColumnSearch" class="search-input" placeholder="Search columns...">
                         <select id="segmentRuleColumn"></select>
                       </div>
                       <div>
@@ -224,12 +218,6 @@
                       </div>
                     </div>
 
-                    <div class="picker-toolbar">
-                      <button type="button" class="button-link secondary" id="saveSegmentDefinition">Save simple segment</button>
-                      <button type="button" class="button-link secondary" id="resetSegmentBuilder">Clear builder</button>
-                      <button type="button" class="button-link secondary" id="backToModelTab">Back to model setup</button>
-                      <button type="button" class="button-link secondary" id="goToConfirmTab">Continue to confirmation</button>
-                    </div>
 
                     <div id="segmentBuilderStatus" class="empty-state compact hidden"></div>
 
@@ -255,6 +243,13 @@
 
                     <div class="selected-package" id="segmentPreviewList"></div>
                     <div class="selected-package" id="savedSegments"></div>
+
+                    <div class="actions module-actions">
+                      <button type="button" class="button-link" id="saveSegmentDefinition">Save simple segment</button>
+                      <button type="button" class="button-link" id="resetSegmentBuilder">Clear builder</button>
+                      <button type="button" class="button-link" id="backToModelTab">Back to analysis setup</button>
+                      <button type="button" class="button-link" id="goToConfirmTab">Continue to review + run</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -263,7 +258,7 @@
             <section class="card inner workflow-panel hidden" data-panel="confirm">
               <div class="section-head block">
                 <div>
-                  <h2>Confirm + run</h2>
+                  <h2>Review + run</h2>
                   <p class="sub small">Final check before the model runs. Review the file, outcome, predictors, transforms, and segments here.</p>
                 </div>
               </div>
@@ -315,7 +310,7 @@
               </div>
 
               <div class="actions">
-                <button type="button" class="button-link secondary" id="backToSegmentFromConfirm">Back to segments</button>
+                <button type="button" class="button-link" id="backToSegmentFromConfirm">Back to segments</button>
                 <button type="submit" id="runKdaButton">Run KDA</button>
               </div>
             </section>
@@ -556,7 +551,7 @@
     const predictorSearch = document.getElementById('predictorSearch');
     const predictorPicker = document.getElementById('predictorPicker');
     const selectedPredictorPackage = document.getElementById('selectedPredictorPackage');
-    const segmentColumnPicker = document.getElementById('segmentColumnPicker');
+    const segmentColumnSearch = document.getElementById('segmentColumnSearch');
     const workflowTabs = Array.from(document.querySelectorAll('.workflow-tab'));
     const workflowPanels = Array.from(document.querySelectorAll('.workflow-panel'));
     const inspectorPanel = document.getElementById('inspectorPanel');
@@ -684,8 +679,16 @@
       return Array.from(document.querySelectorAll('input[name="predictor_columns"]:checked')).map((el) => el.value);
     }
 
-    function currentSegmentSelections() {
-      return Array.from(document.querySelectorAll('input[name="segment_columns"]:checked')).map((el) => el.value);
+    function filterSegmentColumnOptions() {
+      const q = (segmentColumnSearch?.value || '').toLowerCase().trim();
+      Array.from(segmentRuleColumn.options).forEach((option) => {
+        option.hidden = Boolean(q) && !option.text.toLowerCase().includes(q);
+      });
+      const visible = Array.from(segmentRuleColumn.options).find((option) => !option.hidden);
+      if (visible && segmentRuleColumn.selectedOptions[0]?.hidden) {
+        segmentRuleColumn.value = visible.value;
+        syncSegmentOperatorOptions(segmentRuleColumn.value);
+      }
     }
 
     function rebuildTargetDisplayInput() {
@@ -770,19 +773,13 @@
     }
 
     function rebuildSegmentColumnsUI() {
-      const selected = new Set(currentSegmentSelections());
-      segmentColumnPicker.innerHTML = allDisplayColumns().map((col) => `
-        <label class="picker-item js-inspect-column" data-column-name="${escapeHtml(col)}">
-          <input type="checkbox" name="segment_columns" value="${escapeHtml(col)}" ${selected.has(col) ? 'checked' : ''}>
-          <span class="mono">${escapeHtml(col)}</span>
-          <span class="pill ${(columnProfiles[col]?.inferred_type || '').includes('numeric') ? 'numeric' : 'categorical'}">${escapeHtml(columnProfiles[col]?.inferred_type || 'unknown')}</span>
-        </label>`).join('');
       const previous = segmentRuleColumn.value;
       segmentRuleColumn.innerHTML = allDisplayColumns().map((col) => `<option value="${escapeHtml(col)}">${escapeHtml(col)}</option>`).join('');
       if (allDisplayColumns().includes(previous)) {
         segmentRuleColumn.value = previous;
       }
       syncSegmentOperatorOptions(segmentRuleColumn.value);
+      filterSegmentColumnOptions();
       bindColumnInspectorTriggers();
     }
 
@@ -1303,6 +1300,7 @@
     });
     segmentRuleOperator?.addEventListener('change', syncSegmentValueInput);
     predictorSearch?.addEventListener('input', filterPredictorPicker);
+    segmentColumnSearch?.addEventListener('input', filterSegmentColumnOptions);
     recodeOutputColumn?.addEventListener('input', syncRecodeLockUi);
     inspectRecodeOutputButton?.addEventListener('click', () => { if (selectedRecodeOutputName()) renderInspector(selectedRecodeOutputName()); });
     document.querySelector('.js-select-all')?.addEventListener('click', () => {
