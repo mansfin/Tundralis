@@ -26,6 +26,8 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn("Outcome + predictors", html)
         self.assertIn("Segment builder", html)
         self.assertIn("inspectOutcomeButton", html)
+        self.assertIn("Nested condition tree", html)
+        self.assertIn("segmentTreeCanvas", html)
         self.assertIn("overall_sat", html)
         self.assertIn("high_cardinality", html)
 

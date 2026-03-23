@@ -216,14 +216,26 @@
 
                     <div id="segmentBuilderStatus" class="empty-state compact hidden"></div>
 
-                    <label class="field-label small">Advanced nested tree JSON</label>
-                    <textarea id="segmentTreeJson" rows="7" placeholder='Optional. Example: {"all":[{"column":"segment","operator":"equals","value":"Enterprise"},{"any":[{"column":"region","operator":"equals","value":"APAC"},{"column":"overall_sat","operator":"gte","value":6}]}]}'></textarea>
-                    <div class="picker-toolbar">
-                      <button type="button" class="button-link secondary" id="saveAdvancedSegmentDefinition">Save advanced segment</button>
-                      <button type="button" class="button-link secondary" id="refreshPrepPreview">Refresh previews</button>
+                    <div class="segment-builder-shell">
+                      <div class="segment-builder-column">
+                        <label class="field-label small">Simple rule draft</label>
+                        <div class="selected-package" id="segmentRuleDraft"></div>
+                      </div>
+                      <div class="segment-builder-column">
+                        <div class="selected-item-head segment-tree-head">
+                          <label class="field-label small">Nested condition tree</label>
+                          <div class="inline-actions">
+                            <button type="button" class="button-link secondary" id="resetSegmentTree">Reset tree</button>
+                            <button type="button" class="button-link secondary" id="refreshPrepPreview">Refresh previews</button>
+                          </div>
+                        </div>
+                        <div id="segmentTreeCanvas" class="segment-tree-canvas"></div>
+                        <div class="picker-toolbar">
+                          <button type="button" class="button-link secondary" id="saveNestedSegmentDefinition">Save nested segment</button>
+                        </div>
+                      </div>
                     </div>
 
-                    <div class="selected-package" id="segmentRuleDraft"></div>
                     <div class="selected-package" id="segmentPreviewList"></div>
                     <div class="selected-package" id="savedSegments"></div>
                   </div>
@@ -286,6 +298,144 @@
     let draftMapRules = [];
     let draftBucketRules = [];
 
+    let segmentTreeState = createEmptyGroup('all');
+
+    function createId() {
+      return `node_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function createEmptyRule() {
+      return { id: createId(), type: 'rule', column: currentColumns[0] || '', operator: 'equals', value: '' };
+    }
+
+    function createEmptyGroup(kind = 'all') {
+      return { id: createId(), type: 'group', kind, children: [createEmptyRule()] };
+    }
+
+    function treeNodeFromBackend(node) {
+      if (node.all || node.any) {
+        const key = node.any ? 'any' : 'all';
+        return { id: createId(), type: 'group', kind: key, children: (node[key] || []).map(treeNodeFromBackend) };
+      }
+      return { id: createId(), type: 'rule', column: node.column || '', operator: node.operator || 'equals', value: node.value ?? '' };
+    }
+
+    function backendTreeFromNode(node) {
+      if (node.type === 'group') {
+        return { [node.kind]: node.children.map(backendTreeFromNode) };
+      }
+      const rule = { column: node.column, operator: node.operator };
+      if (!['is_null', 'not_null'].includes(node.operator)) rule.value = node.value;
+      return rule;
+    }
+
+    function sanitizeSegmentTree(node) {
+      if (!node) return null;
+      if (node.type === 'group') {
+        const children = (node.children || []).map(sanitizeSegmentTree).filter(Boolean);
+        if (!children.length) return null;
+        return { [node.kind]: children };
+      }
+      if (!node.column || !node.operator) return null;
+      if (!['is_null', 'not_null'].includes(node.operator) && String(node.value ?? '').trim() === '') return null;
+      const rule = { column: node.column, operator: node.operator };
+      if (!['is_null', 'not_null'].includes(node.operator)) rule.value = node.value;
+      return rule;
+    }
+
+    function updateTreeNode(nodeId, updater, node = segmentTreeState) {
+      if (node.id === nodeId) {
+        updater(node);
+        return true;
+      }
+      if (node.type === 'group') {
+        return node.children.some((child) => updateTreeNode(nodeId, updater, child));
+      }
+      return false;
+    }
+
+    function removeTreeNode(nodeId, parent = null, node = segmentTreeState) {
+      if (node.id === nodeId && parent) {
+        parent.children = parent.children.filter((child) => child.id !== nodeId);
+        if (parent.children.length === 0) parent.children.push(createEmptyRule());
+        return true;
+      }
+      if (node.type === 'group') {
+        return node.children.some((child) => removeTreeNode(nodeId, node, child));
+      }
+      return false;
+    }
+
+    function renderSegmentTreeNode(node, depth = 0) {
+      if (node.type === 'group') {
+        return `
+          <div class="segment-tree-group" data-node-id="${node.id}" style="--depth:${depth}">
+            <div class="segment-tree-group-head">
+              <div>
+                <label class="field-label small">Group logic</label>
+                <select class="segment-tree-kind" data-node-id="${node.id}">
+                  <option value="all" ${node.kind === 'all' ? 'selected' : ''}>AND</option>
+                  <option value="any" ${node.kind === 'any' ? 'selected' : ''}>OR</option>
+                </select>
+              </div>
+              <div class="inline-actions">
+                <button type="button" class="button-link secondary segment-tree-add-rule" data-node-id="${node.id}">Add rule</button>
+                <button type="button" class="button-link secondary segment-tree-add-group" data-node-id="${node.id}">Add group</button>
+                ${depth > 0 ? `<button type="button" class="button-link secondary segment-tree-remove-node" data-node-id="${node.id}">Remove group</button>` : ''}
+              </div>
+            </div>
+            <div class="segment-tree-children">
+              ${(node.children || []).map((child) => renderSegmentTreeNode(child, depth + 1)).join('')}
+            </div>
+          </div>`;
+      }
+      const options = allDisplayColumns().map((col) => `<option value="${escapeHtml(col)}" ${col === node.column ? 'selected' : ''}>${escapeHtml(col)}</option>`).join('');
+      const operatorOptions = operatorOptionsForColumn(node.column).map((op) => `<option value="${op}" ${op === node.operator ? 'selected' : ''}>${op}</option>`).join('');
+      const valueDisabled = ['is_null', 'not_null'].includes(node.operator) ? 'disabled' : '';
+      return `
+        <div class="segment-tree-rule" data-node-id="${node.id}">
+          <select class="segment-tree-column" data-node-id="${node.id}">${options}</select>
+          <select class="segment-tree-operator" data-node-id="${node.id}">${operatorOptions}</select>
+          <input type="text" class="segment-tree-value" data-node-id="${node.id}" value="${escapeHtml(node.value ?? '')}" ${valueDisabled} placeholder="Value">
+          <button type="button" class="button-link secondary segment-tree-remove-node" data-node-id="${node.id}">Remove</button>
+        </div>`;
+    }
+
+    function renderSegmentTree() {
+      segmentTreeCanvas.innerHTML = renderSegmentTreeNode(segmentTreeState);
+      bindSegmentTreeEvents();
+    }
+
+    function bindSegmentTreeEvents() {
+      segmentTreeCanvas.querySelectorAll('.segment-tree-kind').forEach((el) => el.addEventListener('change', () => {
+        updateTreeNode(el.dataset.nodeId, (node) => { node.kind = el.value; });
+        renderSegmentTree();
+      }));
+      segmentTreeCanvas.querySelectorAll('.segment-tree-add-rule').forEach((el) => el.addEventListener('click', () => {
+        updateTreeNode(el.dataset.nodeId, (node) => { node.children.push(createEmptyRule()); });
+        renderSegmentTree();
+      }));
+      segmentTreeCanvas.querySelectorAll('.segment-tree-add-group').forEach((el) => el.addEventListener('click', () => {
+        updateTreeNode(el.dataset.nodeId, (node) => { node.children.push(createEmptyGroup('all')); });
+        renderSegmentTree();
+      }));
+      segmentTreeCanvas.querySelectorAll('.segment-tree-remove-node').forEach((el) => el.addEventListener('click', () => {
+        removeTreeNode(el.dataset.nodeId);
+        renderSegmentTree();
+      }));
+      segmentTreeCanvas.querySelectorAll('.segment-tree-column').forEach((el) => el.addEventListener('change', () => {
+        updateTreeNode(el.dataset.nodeId, (node) => { node.column = el.value; node.operator = operatorOptionsForColumn(el.value)[0]; });
+        renderSegmentTree();
+      }));
+      segmentTreeCanvas.querySelectorAll('.segment-tree-operator').forEach((el) => el.addEventListener('change', () => {
+        updateTreeNode(el.dataset.nodeId, (node) => { node.operator = el.value; if (['is_null','not_null'].includes(el.value)) node.value=''; });
+        renderSegmentTree();
+      }));
+      segmentTreeCanvas.querySelectorAll('.segment-tree-value').forEach((el) => el.addEventListener('input', () => {
+        updateTreeNode(el.dataset.nodeId, (node) => { node.value = el.value; });
+      }));
+    }
+
     const segmentDefinitionsInput = document.getElementById('segmentDefinitionsInput');
     const recodeDefinitionsInput = document.getElementById('recodeDefinitionsInput');
     const segmentRuleDraft = document.getElementById('segmentRuleDraft');
@@ -296,7 +446,7 @@
     const segmentRuleColumn = document.getElementById('segmentRuleColumn');
     const segmentRuleOperator = document.getElementById('segmentRuleOperator');
     const segmentRuleValue = document.getElementById('segmentRuleValue');
-    const segmentTreeJson = document.getElementById('segmentTreeJson');
+    const segmentTreeCanvas = document.getElementById('segmentTreeCanvas');
     const segmentBuilderStatus = document.getElementById('segmentBuilderStatus');
     const recodeBuilderStatus = document.getElementById('recodeBuilderStatus');
     const inspectorColumnSelect = document.getElementById('inspectorColumnSelect');
@@ -517,7 +667,8 @@
     function resetSegmentBuilder() {
       draftRules = [];
       segmentName.value = '';
-      segmentTreeJson.value = '';
+      segmentTreeState = createEmptyGroup('all');
+      renderSegmentTree();
       segmentRuleValue.value = '';
       renderDraftRules();
       setStatus(segmentBuilderStatus, '');
@@ -533,7 +684,8 @@
         if (simple) {
           draftRules = children.map((child) => ({ ...child }));
           segmentLogic.value = key === 'any' ? 'OR' : 'AND';
-          segmentTreeJson.value = '';
+          segmentTreeState = createEmptyGroup('all');
+      renderSegmentTree();
           renderDraftRules();
           setStatus(segmentBuilderStatus, `Loaded segment ${index + 1} into the simple builder.`, 'info');
           setWorkflowTab('segment');
@@ -542,8 +694,9 @@
       }
       draftRules = [];
       renderDraftRules();
-      segmentTreeJson.value = JSON.stringify(segment.tree || {}, null, 2);
-      setStatus(segmentBuilderStatus, `Loaded segment ${index + 1} into advanced JSON.`, 'info');
+      segmentTreeState = treeNodeFromBackend(segment.tree || { all: [] });
+      renderSegmentTree();
+      setStatus(segmentBuilderStatus, `Loaded segment ${index + 1} into the nested builder.`, 'info');
       setWorkflowTab('segment');
     }
 
@@ -872,16 +1025,15 @@
       setStatus(segmentBuilderStatus, `Saved segment '${name}'.`, 'success');
     });
 
-    document.getElementById('saveAdvancedSegmentDefinition')?.addEventListener('click', async () => {
+    document.getElementById('saveNestedSegmentDefinition')?.addEventListener('click', async () => {
       const name = segmentName.value.trim();
-      const raw = segmentTreeJson.value.trim();
-      if (!name || !raw) {
-        setStatus(segmentBuilderStatus, 'Segment name and advanced JSON are required.', 'error');
+      if (!name) {
+        setStatus(segmentBuilderStatus, 'Segment name is required.', 'error');
         return;
       }
-      let tree;
-      try { tree = JSON.parse(raw); } catch (error) {
-        setStatus(segmentBuilderStatus, 'Advanced segment JSON is invalid.', 'error');
+      const tree = sanitizeSegmentTree(segmentTreeState);
+      if (!tree) {
+        setStatus(segmentBuilderStatus, 'Add at least one valid rule to the nested tree.', 'error');
         return;
       }
       savedSegmentDefs.push({ name, tree });
@@ -893,7 +1045,7 @@
         return;
       }
       resetSegmentBuilder();
-      setStatus(segmentBuilderStatus, `Saved advanced segment '${name}'.`, 'success');
+      setStatus(segmentBuilderStatus, `Saved nested segment '${name}'.`, 'success');
     });
 
     workflowTabs.forEach((tab) => tab.addEventListener('click', () => setWorkflowTab(tab.dataset.tab)));
@@ -902,6 +1054,7 @@
     document.getElementById('goToSegmentTab')?.addEventListener('click', () => setWorkflowTab('segment'));
     document.getElementById('backToModelTab')?.addEventListener('click', () => setWorkflowTab('model'));
     document.getElementById('refreshPrepPreview')?.addEventListener('click', refreshPrepPreview);
+    document.getElementById('resetSegmentTree')?.addEventListener('click', () => { segmentTreeState = createEmptyGroup('all'); renderSegmentTree(); });
     document.getElementById('resetSegmentBuilder')?.addEventListener('click', resetSegmentBuilder);
     recodeType?.addEventListener('change', (e) => setRecodePanel(e.target.value));
     recodeSourceColumn?.addEventListener('change', (e) => renderInspector(e.target.value));
@@ -939,6 +1092,7 @@
     renderMapDraft();
     renderBucketDraft();
     renderSavedRecodes();
+    renderSegmentTree();
     syncSegmentOperatorOptions(segmentRuleColumn.value);
     setRecodePanel(recodeType.value);
     renderInspector(inspectorColumnSelect.value || targetColumnSelect.value || allDisplayColumns()[0]);
