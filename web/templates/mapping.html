@@ -66,9 +66,6 @@
                 <div id="recodeBuilderStatus" class="empty-state compact hidden"></div>
                 <div class="selected-package" id="savedRecodes"></div>
 
-                <div class="actions module-actions">
-                  <button type="button" class="button-link" id="goToModelTab">Continue to analysis setup</button>
-                </div>
               </div>
             </section>
 
@@ -1236,7 +1233,6 @@
       }
       setWorkflowTab(tab.dataset.tab);
     }));
-    document.getElementById('goToModelTab')?.addEventListener('click', () => setWorkflowTab('model'));
     document.getElementById('backToRecodeTab')?.addEventListener('click', () => setWorkflowTab('recode'));
     document.getElementById('goToSegmentTab')?.addEventListener('click', () => setWorkflowTab('segment'));
     document.getElementById('backToModelTab')?.addEventListener('click', () => setWorkflowTab('model'));
@@ -1249,8 +1245,8 @@
     document.getElementById('refreshPrepPreview')?.addEventListener('click', refreshPrepPreview);
     document.getElementById('resetSegmentTree')?.addEventListener('click', () => { segmentTreeState = createEmptyGroup('all'); renderSegmentTree(); });
     document.getElementById('resetSegmentBuilder')?.addEventListener('click', resetSegmentBuilder);
-    recodeType?.addEventListener('change', (e) => { syncRecodeLockUi(); setRecodePanel(e.target.value); });
-    recodeSourceColumn?.addEventListener('change', (e) => { syncRecodeLockUi(); renderInspector(e.target.value); });
+    recodeType?.addEventListener('change', () => { updateRecodeDraftUi(); renderSavedRecodes(); renderInspector(recodeSourceColumn.value || targetColumnSelect.value); });
+    recodeSourceColumn?.addEventListener('change', (e) => { updateRecodeDraftUi(); renderSavedRecodes(); renderInspector(e.target.value); });
     inspectorColumnSelect?.addEventListener('change', (e) => renderInspector(e.target.value));
     targetColumnSelect?.addEventListener('change', () => {
       currentTarget = targetColumnSelect.value;
@@ -1267,7 +1263,7 @@
     segmentRuleOperator?.addEventListener('change', syncSegmentValueInput);
     predictorSearch?.addEventListener('input', filterPredictorPicker);
     segmentColumnSearch?.addEventListener('input', filterSegmentColumnOptions);
-    recodeOutputColumn?.addEventListener('input', syncRecodeLockUi);
+    recodeOutputColumn?.addEventListener('input', () => { updateRecodeDraftUi(); renderSavedRecodes(); });
     document.querySelector('.js-select-all')?.addEventListener('click', () => {
       Array.from(document.querySelectorAll('input[name="predictor_columns"]')).forEach((el) => { el.checked = true; });
       rebuildPredictorUI();
@@ -1286,7 +1282,7 @@
     renderSavedSegments();
     renderSegmentPreviews();
     renderSavedRecodes();
-    syncRecodeLockUi();
+    updateRecodeDraftUi();
     renderSegmentTree();
     syncSegmentOperatorOptions(segmentRuleColumn.value);
     syncInspectorCollapse();
