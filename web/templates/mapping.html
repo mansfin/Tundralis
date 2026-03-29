@@ -394,6 +394,14 @@
               <label class="field-label">Top values</label>
               <div id="inspectorTopValues"></div>
             </div>
+
+            <div class="selected-item" id="codedCategoryHelperCard">
+              <div class="selected-item-head">
+                <span>Coded-category label helper</span>
+              </div>
+              <div class="sub small" id="codedCategoryHelperCopy">Mark a numeric field as coded category to map values into readable labels.</div>
+              <div id="codedCategoryHelperPanel"></div>
+            </div>
           </aside>
         </div>
 
@@ -633,6 +641,9 @@
     const applyCodebookButton = document.getElementById('applyCodebookButton');
     const labelUpgradeStatus = document.getElementById('labelUpgradeStatus');
     const recommendedRenamePanel = document.getElementById('recommendedRenamePanel');
+    const codedCategoryHelperCard = document.getElementById('codedCategoryHelperCard');
+    const codedCategoryHelperCopy = document.getElementById('codedCategoryHelperCopy');
+    const codedCategoryHelperPanel = document.getElementById('codedCategoryHelperPanel');
 
     function escapeHtml(value) {
       return String(value ?? '')
@@ -994,6 +1005,91 @@
 
     function semanticOverrideFor(columnName) {
       return (savedSemanticOverrides || {})[columnName] || '';
+    }
+
+    function codedCategoryOutputName(columnName) {
+      return `${columnName}_label`;
+    }
+
+    function existingCodedCategoryRecode(columnName) {
+      return savedRecodesState.find((item) => item.type === 'map_values' && item.source_column === columnName && item.output_column === codedCategoryOutputName(columnName));
+    }
+
+    function suggestedMappingRows(columnName) {
+      const profile = columnProfiles[columnName] || {};
+      const existing = existingCodedCategoryRecode(columnName);
+      if (existing?.mapping) {
+        return Object.entries(existing.mapping).map(([from, to]) => ({ from: String(from), to: String(to) }));
+      }
+      return (profile.top_values || [])
+        .map((row) => String(row.value ?? '').trim())
+        .filter((value) => value !== '')
+        .slice(0, 8)
+        .map((value) => ({ from: value, to: '' }));
+    }
+
+    async function saveCodedCategoryMapping(columnName) {
+      const rows = Array.from(codedCategoryHelperPanel.querySelectorAll('[data-coded-map-row]')).map((row) => ({
+        from: row.querySelector('[data-coded-from]')?.value?.trim() || '',
+        to: row.querySelector('[data-coded-to]')?.value?.trim() || '',
+      })).filter((row) => row.from && row.to);
+      if (!rows.length) {
+        setStatus(recodeBuilderStatus, 'Add at least one value label before saving the coded-category helper.', 'error');
+        return;
+      }
+      const recode = {
+        type: 'map_values',
+        source_column: columnName,
+        output_column: codedCategoryOutputName(columnName),
+        mapping: Object.fromEntries(rows.map((row) => [row.from, row.to])),
+      };
+      const existingIndex = savedRecodesState.findIndex((item) => item.type === 'map_values' && item.source_column === columnName && item.output_column === recode.output_column);
+      if (existingIndex >= 0) {
+        savedRecodesState[existingIndex] = recode;
+      } else {
+        savedRecodesState.push(recode);
+      }
+      recodeDefinitionsInput.value = JSON.stringify(savedRecodesState);
+      const ok = await refreshPrepPreview();
+      if (ok) {
+        setStatus(recodeBuilderStatus, `Saved labeled helper '${recode.output_column}'.`, 'success');
+        renderSavedRecodes();
+        renderInspector(columnName);
+      }
+    }
+
+    function renderCodedCategoryHelper(profile) {
+      const isCodedCategory = (profile.semantic_class === 'nominal_coded_numeric') || (semanticOverrideFor(profile.column) === 'nominal_coded_numeric');
+      codedCategoryHelperCard.classList.toggle('hidden', !isCodedCategory);
+      if (!isCodedCategory) {
+        codedCategoryHelperCopy.textContent = 'Mark a numeric field as coded category to map values into readable labels.';
+        codedCategoryHelperPanel.innerHTML = '<div class="empty-state compact">No coded-category label helper active for this field.</div>';
+        return;
+      }
+      const outputName = codedCategoryOutputName(profile.column);
+      const hasExisting = Boolean(existingCodedCategoryRecode(profile.column));
+      codedCategoryHelperCopy.textContent = hasExisting
+        ? `Maintain readable labels for ${profile.column}. Saved output column: ${outputName}`
+        : `Create a readable label helper for ${profile.column}. Output column: ${outputName}`;
+      const rows = suggestedMappingRows(profile.column);
+      codedCategoryHelperPanel.innerHTML = `
+        <div class="sub small">Map common code values to human-readable labels. This saves a standard value-mapping transform and makes the new labeled column available for segmentation and review.</div>
+        <div class="selected-package">
+          ${rows.length ? rows.map((row, idx) => `
+            <div class="selected-item" data-coded-map-row="${idx}">
+              <div class="field-grid three compact">
+                <div><input type="text" data-coded-from value="${escapeHtml(row.from)}" placeholder="Code value"></div>
+                <div><input type="text" data-coded-to value="${escapeHtml(row.to)}" placeholder="Readable label"></div>
+                <div class="sub small">→ ${escapeHtml(outputName)}</div>
+              </div>
+            </div>
+          `).join('') : '<div class="empty-state compact">No top values available to seed labels.</div>'}
+        </div>
+        <div class="actions"><button type="button" class="button-link secondary" id="saveCodedCategoryMapping">Save coded-category labels</button></div>
+      `;
+      document.getElementById('saveCodedCategoryMapping')?.addEventListener('click', async () => {
+        await saveCodedCategoryMapping(profile.column);
+      });
     }
 
     async function applySemanticOverride(columnName, semanticClass) {
@@ -1788,6 +1884,8 @@
       topValues.innerHTML = (profile.top_values || []).length
         ? `<table class="value-table"><thead><tr><th>Value</th><th>Count</th><th>%</th></tr></thead><tbody>${profile.top_values.map((row) => `<tr><td>${escapeHtml(row.value)}</td><td>${row.count}</td><td>${row.pct}%</td></tr>`).join('')}</tbody></table>`
         : '<div class="empty-state compact">No non-null values to preview.</div>';
+
+      renderCodedCategoryHelper(profile);
 
       document.getElementById('inspectorSemanticOverride')?.addEventListener('change', async (event) => {
         await applySemanticOverride(profile.column, event.target.value || '');

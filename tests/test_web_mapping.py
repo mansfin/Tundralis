@@ -75,6 +75,8 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn("launchRecodeBuilder", html)
         self.assertIn("semanticOverridesInput", html)
         self.assertIn("Clarify numeric meaning", html)
+        self.assertIn("codedCategoryHelperCard", html)
+        self.assertIn("Save coded-category labels", html)
         self.assertIn("recodeSourceColumnSelector", html)
         self.assertIn("column-selector-search", html)
         self.assertIn("inspectOutcomeButton", html)
@@ -183,6 +185,8 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn('let savedSemanticOverrides = {"overall_sat": "ordinal_numeric", "segment": "labeled_categorical"}', html)
         self.assertIn('schemaConfidenceMeta', html)
         self.assertIn('Object.keys(savedSemanticOverrides || {}).length', html)
+        self.assertIn('codedCategoryOutputName', html)
+        self.assertIn('Save coded-category labels', html)
         self.assertIn('Overall satisfaction', html)
 
     def test_inspect_failure_returns_error_id_and_logs_traceback(self):
