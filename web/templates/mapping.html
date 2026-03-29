@@ -1086,31 +1086,49 @@
       return deduped;
     }
 
-    function suggestSegmentFromLabeledHelper(columnName, preferredLabel = '') {
+    function suggestSegmentFromLabeledHelper(columnName, preferredLabels = []) {
       const outputName = codedCategoryOutputName(columnName);
       const labels = labeledHelperSuggestions(columnName);
       if (!labels.length) {
         setStatus(segmentBuilderStatus, `Save at least one readable label for '${outputName}' before creating a starter segment.`, 'error');
         return;
       }
-      const selected = labels.find((item) => item.label === preferredLabel) || labels[0];
-      const segmentNameValue = `${outputName}: ${selected.label}`;
-      const draft = {
-        name: segmentNameValue,
-        tree: { all: [{ column: outputName, operator: 'equals', value: selected.label }] },
-      };
+      const requested = Array.isArray(preferredLabels)
+        ? preferredLabels.map((value) => String(value || '').trim()).filter(Boolean)
+        : [String(preferredLabels || '').trim()].filter(Boolean);
+      const selected = requested.length
+        ? labels.filter((item) => requested.includes(item.label))
+        : labels.slice(0, 1);
+      const chosen = selected.length ? selected : labels.slice(0, 1);
+      const segmentNameSuffix = chosen.length === 1
+        ? chosen[0].label
+        : `${chosen[0].label} + ${chosen.length - 1} more`;
+      const segmentNameValue = `${outputName}: ${segmentNameSuffix}`;
+      const draftRulesForHelper = chosen.map((item) => ({
+        column: outputName,
+        operator: 'equals',
+        value: item.label,
+        value_type: 'categorical',
+      }));
+      const tree = draftRulesForHelper.length === 1
+        ? { all: [{ column: outputName, operator: 'equals', value: chosen[0].label }] }
+        : { any: chosen.map((item) => ({ column: outputName, operator: 'equals', value: item.label })) };
       segmentName.value = segmentNameValue;
-      segmentTreeState = treeNodeFromBackend(draft.tree);
+      draftRules = draftRulesForHelper;
+      segmentLogic.value = draftRulesForHelper.length > 1 ? 'OR' : 'AND';
+      segmentTreeState = treeNodeFromBackend(tree);
       if (!savedSegmentColumnsState.includes(outputName)) {
         savedSegmentColumnsState = [outputName, ...savedSegmentColumnsState.filter((col) => col !== outputName)];
       }
       rebuildSegmentColumnsUI();
       segmentRuleColumn.value = outputName;
       syncSegmentOperatorOptions(outputName);
-      segmentRuleValue.value = selected.label;
+      segmentRuleValue.value = chosen.map((item) => item.label).join(', ');
+      renderDraftRules();
       renderSegmentTree();
       renderSegmentValueSuggestions(outputName);
-      setStatus(segmentBuilderStatus, `Starter segment drafted from '${outputName}' using label '${selected.label}'.`, 'success');
+      const selectedSummary = chosen.map((item) => `'${item.label}'`).join(', ');
+      setStatus(segmentBuilderStatus, `Starter segment drafted from '${outputName}' using ${chosen.length > 1 ? 'labels' : 'label'} ${selectedSummary}.`, 'success');
       setWorkflowTab('segment');
     }
 
@@ -1143,7 +1161,7 @@
             </div>
           `).join('') : '<div class="empty-state compact">No top values available to seed labels.</div>'}
         </div>
-        ${labelSuggestions.length ? `<div class="sub small">Draft a starter segment from: ${labelSuggestions.map((row) => `<button type="button" class="button-link secondary" data-draft-helper-label="${escapeHtml(row.label)}">${escapeHtml(row.label)}</button>`).join(' ')}</div>` : ''}
+        ${labelSuggestions.length ? `<div class="selected-item compact"><div class="selected-item-head"><span>Draft starter segment from readable labels</span><span class="sub small">Choose one or more labels to seed an OR segment.</span></div><div class="inline-actions">${labelSuggestions.map((row) => `<label class="checkbox-inline"><input type="checkbox" data-draft-helper-label="${escapeHtml(row.label)}" value="${escapeHtml(row.label)}"><span>${escapeHtml(row.label)}</span></label>`).join(' ')}</div></div>` : ''}
         <div class="actions">
           <button type="button" class="button-link secondary" id="saveCodedCategoryMapping">Save coded-category labels</button>
           <button type="button" class="button-link secondary" id="promoteCodedCategorySegment">${helperInSegments ? 'Added to segment columns' : 'Use labeled helper in segments'}</button>
@@ -1164,12 +1182,11 @@
         setWorkflowTab('segment');
       });
       document.getElementById('draftCodedCategorySegment')?.addEventListener('click', () => {
-        suggestSegmentFromLabeledHelper(profile.column);
-      });
-      codedCategoryHelperPanel.querySelectorAll('[data-draft-helper-label]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          suggestSegmentFromLabeledHelper(profile.column, btn.dataset.draftHelperLabel || '');
-        });
+        const selectedLabels = Array.from(codedCategoryHelperPanel.querySelectorAll('[data-draft-helper-label]:checked'))
+          .map((input) => input.value || input.dataset.draftHelperLabel || '')
+          .map((value) => String(value || '').trim())
+          .filter(Boolean);
+        suggestSegmentFromLabeledHelper(profile.column, selectedLabels);
       });
     }
 
@@ -1639,7 +1656,8 @@
       draftRules.forEach((rule, idx) => {
         const el = document.createElement('div');
         el.className = 'selected-item';
-        el.innerHTML = `<div class="selected-item-head"><button type="button" class="column-link js-inspect-link" data-column-name="${escapeHtml(rule.column)}">${escapeHtml(rule.column)}</button><button type="button" class="button-link secondary" data-remove-rule="${idx}">Remove</button></div><div>${escapeHtml(rule.operator)}${rule.value !== undefined ? ` ${escapeHtml(rule.value)}` : ''}</div>`;
+        const displayOperator = rule.operator === 'equals' && draftRules.length > 1 ? 'OR equals' : rule.operator;
+        el.innerHTML = `<div class="selected-item-head"><button type="button" class="column-link js-inspect-link" data-column-name="${escapeHtml(rule.column)}">${escapeHtml(rule.column)}</button><button type="button" class="button-link secondary" data-remove-rule="${idx}">Remove</button></div><div>${escapeHtml(displayOperator)}${rule.value !== undefined ? ` ${escapeHtml(rule.value)}` : ''}</div>`;
         segmentRuleDraft.appendChild(el);
       });
       bindColumnInspectorTriggers();
