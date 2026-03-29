@@ -2,9 +2,11 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+.env.local
 output/
 app_runtime/
 !app_runtime/.env.example
+secrets/*.env.local
 *.egg-info/
 dist/
 build/

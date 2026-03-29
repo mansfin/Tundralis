@@ -30,6 +30,23 @@ Methodology direction is documented in `docs/methodology/`, including:
 pip install -r requirements.txt
 ```
 
+### Local secrets for browser/basic-auth work
+
+Use a local-only secret file for credentials that should never enter git:
+
+```bash
+mkdir -p secrets
+cp secrets/.env.example secrets/.env.local
+```
+
+Then set values in `secrets/.env.local`.
+
+Current intended variables:
+- `TUNDRALIS_BASIC_AUTH_USER`
+- `TUNDRALIS_BASIC_AUTH_PASS`
+
+Do not store these in `MEMORY.md`, Slack notes, or committed files.
+
 ### 2. Generate sample data (optional)
 
 ```bash
