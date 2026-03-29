@@ -56,6 +56,16 @@ class TestRecommendedLabels(unittest.TestCase):
         semantic_classes = {profiles[column].get("semantic_class") for column in numeric_with_top_values}
         self.assertTrue(any(value in semantic_classes for value in {"ordinal_numeric", "continuous_numeric", "identifier_helper", "ambiguous_numeric", "nominal_coded_numeric"}))
 
+    def test_non_qualtrics_vendor_fixture_contains_multi_category_company_size_signal(self):
+        bundle = build_prep_bundle(ROOT / "data" / "fixtures" / "ironclad_brand_perceptions_raw.csv")
+        profiles = bundle.column_profiles
+        company_size = profiles["company_size"]
+        top_values = [str(row.get("value", "")) for row in company_size.get("top_values", [])]
+        self.assertIn("Commercial_Business", top_values)
+        self.assertIn("SMB_Midmarket", top_values)
+        self.assertGreaterEqual(len(top_values), 2)
+        self.assertIn(company_size.get("semantic_class"), {"labeled_categorical", "nominal_coded_numeric", "identifier_helper"})
+
 
 if __name__ == "__main__":
     unittest.main()

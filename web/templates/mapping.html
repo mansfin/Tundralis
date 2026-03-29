@@ -1068,11 +1068,26 @@
       }
     }
 
+    function helperDisplayName(columnName) {
+      const outputName = codedCategoryOutputName(columnName);
+      const suggested = displayNameValue(outputName);
+      if (suggested && suggested !== outputName) return suggested;
+      const sourceLabel = displayNameValue(columnName);
+      if (sourceLabel && sourceLabel !== columnName) return sourceLabel;
+      return outputName.replace(/_label$/, '').replaceAll('_', ' ');
+    }
+
     function labeledHelperSuggestions(columnName) {
       const helper = existingCodedCategoryRecode(columnName);
       const outputName = codedCategoryOutputName(columnName);
+      const frequencyByValue = Object.fromEntries(((columnProfiles[columnName] || {}).top_values || []).map((row) => [String(row.value ?? '').trim(), Number(row.count || 0)]));
       const entries = Object.entries(helper?.mapping || {})
-        .map(([from, to]) => ({ from: String(from).trim(), label: String(to).trim(), column: outputName }))
+        .map(([from, to]) => ({
+          from: String(from).trim(),
+          label: String(to).trim(),
+          column: outputName,
+          count: frequencyByValue[String(from).trim()] || 0,
+        }))
         .filter((row) => row.from && row.label);
       const deduped = [];
       const seen = new Set();
@@ -1083,7 +1098,7 @@
           deduped.push(row);
         }
       });
-      return deduped;
+      return deduped.sort((a, b) => (b.count || 0) - (a.count || 0) || a.label.localeCompare(b.label));
     }
 
     function suggestSegmentFromLabeledHelper(columnName, preferredLabels = []) {
@@ -1100,10 +1115,13 @@
         ? labels.filter((item) => requested.includes(item.label))
         : labels.slice(0, 1);
       const chosen = selected.length ? selected : labels.slice(0, 1);
+      const helperName = helperDisplayName(columnName);
       const segmentNameSuffix = chosen.length === 1
         ? chosen[0].label
-        : `${chosen[0].label} + ${chosen.length - 1} more`;
-      const segmentNameValue = `${outputName}: ${segmentNameSuffix}`;
+        : chosen.length === 2
+          ? `${chosen[0].label} or ${chosen[1].label}`
+          : `${chosen[0].label} or ${chosen[1].label} (+${chosen.length - 2})`;
+      const segmentNameValue = `${helperName}: ${segmentNameSuffix}`;
       const draftRulesForHelper = chosen.map((item) => ({
         column: outputName,
         operator: 'equals',
@@ -1161,7 +1179,7 @@
             </div>
           `).join('') : '<div class="empty-state compact">No top values available to seed labels.</div>'}
         </div>
-        ${labelSuggestions.length ? `<div class="selected-item compact"><div class="selected-item-head"><span>Draft starter segment from readable labels</span><span class="sub small">Choose one or more labels to seed an OR segment.</span></div><div class="inline-actions"><button type="button" class="button-link secondary" id="selectAllHelperLabels">Select all</button><button type="button" class="button-link secondary" id="clearHelperLabels">Clear</button></div><div class="inline-actions">${labelSuggestions.map((row) => `<label class="checkbox-inline"><input type="checkbox" data-draft-helper-label="${escapeHtml(row.label)}" value="${escapeHtml(row.label)}"><span>${escapeHtml(row.label)}</span></label>`).join(' ')}</div></div>` : ''}
+        ${labelSuggestions.length ? `<div class="selected-item compact"><div class="selected-item-head"><span>Draft starter segment from readable labels</span><span class="sub small">Choose one or more labels to seed an OR segment.</span></div><div class="inline-actions"><button type="button" class="button-link secondary" id="selectAllHelperLabels">Select all</button><button type="button" class="button-link secondary" id="clearHelperLabels">Clear</button></div><div class="inline-actions">${labelSuggestions.map((row) => `<label class="checkbox-inline"><input type="checkbox" data-draft-helper-label="${escapeHtml(row.label)}" value="${escapeHtml(row.label)}"><span>${escapeHtml(row.label)}</span><span class="pill numeric">${escapeHtml(row.count || 0)} rows</span></label>`).join(' ')}</div></div>` : ''}
         <div class="actions">
           <button type="button" class="button-link secondary" id="saveCodedCategoryMapping">Save coded-category labels</button>
           <button type="button" class="button-link secondary" id="promoteCodedCategorySegment">${helperInSegments ? 'Added to segment columns' : 'Use labeled helper in segments'}</button>
