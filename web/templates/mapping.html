@@ -1161,7 +1161,7 @@
             </div>
           `).join('') : '<div class="empty-state compact">No top values available to seed labels.</div>'}
         </div>
-        ${labelSuggestions.length ? `<div class="selected-item compact"><div class="selected-item-head"><span>Draft starter segment from readable labels</span><span class="sub small">Choose one or more labels to seed an OR segment.</span></div><div class="inline-actions">${labelSuggestions.map((row) => `<label class="checkbox-inline"><input type="checkbox" data-draft-helper-label="${escapeHtml(row.label)}" value="${escapeHtml(row.label)}"><span>${escapeHtml(row.label)}</span></label>`).join(' ')}</div></div>` : ''}
+        ${labelSuggestions.length ? `<div class="selected-item compact"><div class="selected-item-head"><span>Draft starter segment from readable labels</span><span class="sub small">Choose one or more labels to seed an OR segment.</span></div><div class="inline-actions"><button type="button" class="button-link secondary" id="selectAllHelperLabels">Select all</button><button type="button" class="button-link secondary" id="clearHelperLabels">Clear</button></div><div class="inline-actions">${labelSuggestions.map((row) => `<label class="checkbox-inline"><input type="checkbox" data-draft-helper-label="${escapeHtml(row.label)}" value="${escapeHtml(row.label)}"><span>${escapeHtml(row.label)}</span></label>`).join(' ')}</div></div>` : ''}
         <div class="actions">
           <button type="button" class="button-link secondary" id="saveCodedCategoryMapping">Save coded-category labels</button>
           <button type="button" class="button-link secondary" id="promoteCodedCategorySegment">${helperInSegments ? 'Added to segment columns' : 'Use labeled helper in segments'}</button>
@@ -1180,6 +1180,16 @@
         syncSegmentOperatorOptions(outputName);
         setStatus(segmentBuilderStatus, `Segment builder now prefers '${outputName}'.`, 'success');
         setWorkflowTab('segment');
+      });
+      document.getElementById('selectAllHelperLabels')?.addEventListener('click', () => {
+        codedCategoryHelperPanel.querySelectorAll('[data-draft-helper-label]').forEach((input) => {
+          input.checked = true;
+        });
+      });
+      document.getElementById('clearHelperLabels')?.addEventListener('click', () => {
+        codedCategoryHelperPanel.querySelectorAll('[data-draft-helper-label]').forEach((input) => {
+          input.checked = false;
+        });
       });
       document.getElementById('draftCodedCategorySegment')?.addEventListener('click', () => {
         const selectedLabels = Array.from(codedCategoryHelperPanel.querySelectorAll('[data-draft-helper-label]:checked'))
@@ -1669,6 +1679,25 @@
       });
     }
 
+    function describeSegmentTree(tree) {
+      if (!tree || typeof tree !== 'object') return 'No rules saved yet.';
+      if (tree.all || tree.any) {
+        const key = tree.any ? 'any' : 'all';
+        const children = Array.isArray(tree[key]) ? tree[key] : [];
+        const joiner = key === 'any' ? ' OR ' : ' AND ';
+        const formatted = children.map((child) => {
+          if (child?.column && child?.operator) {
+            return `${child.column} ${child.operator}${child.value !== undefined ? ` ${child.value}` : ''}`;
+          }
+          return JSON.stringify(child);
+        }).filter(Boolean);
+        if (formatted.length) {
+          return `${key === 'any' ? 'Match any' : 'Match all'}: ${formatted.join(joiner)}`;
+        }
+      }
+      return JSON.stringify(tree, null, 2);
+    }
+
     function renderSavedSegments() {
       savedSegments.innerHTML = savedSegmentDefs.length ? '' : '<div class="empty-state">No saved segments yet.</div>';
       savedSegmentDefs.forEach((seg, idx) => {
@@ -1682,6 +1711,7 @@
               <button type="button" class="button-link secondary" data-remove-segment="${idx}">Remove</button>
             </div>
           </div>
+          <div class="sub small">${escapeHtml(describeSegmentTree(seg.tree))}</div>
           <pre>${escapeHtml(JSON.stringify(seg.tree, null, 2))}</pre>
         `;
         savedSegments.appendChild(el);

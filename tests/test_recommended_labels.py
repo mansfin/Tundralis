@@ -43,6 +43,19 @@ class TestRecommendedLabels(unittest.TestCase):
         self.assertGreaterEqual(surfaced_count, 1)
         self.assertTrue(recommendation["helper_fields"] or recommendation["meta_candidates"])
 
+    def test_non_qualtrics_vendor_fixture_surfaces_numeric_fields_with_value_profiles(self):
+        bundle = build_prep_bundle(ROOT / "data" / "fixtures" / "ironclad_brand_perceptions_raw.csv")
+        profiles = bundle.column_profiles
+        numeric_with_top_values = [
+            column
+            for column, profile in profiles.items()
+            if profile.get("inferred_type") == "numeric" and profile.get("top_values")
+        ]
+        self.assertTrue(numeric_with_top_values)
+        self.assertTrue(any("qualtrics" not in column.lower() for column in numeric_with_top_values))
+        semantic_classes = {profiles[column].get("semantic_class") for column in numeric_with_top_values}
+        self.assertTrue(any(value in semantic_classes for value in {"ordinal_numeric", "continuous_numeric", "identifier_helper", "ambiguous_numeric", "nominal_coded_numeric"}))
+
 
 if __name__ == "__main__":
     unittest.main()
