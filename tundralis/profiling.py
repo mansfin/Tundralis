@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from math import isfinite
+import re
 
 import pandas as pd
 
@@ -103,20 +104,115 @@ def _warnings(series: pd.Series, inferred_type: str) -> list[str]:
     return warnings
 
 
+def _semantic_lower(column: str, column_context: dict | None) -> str:
+    column_context = column_context or {}
+    semantic_text = column_context.get("semantic_text") or column
+    return str(semantic_text).lower()
+
+
+def _looks_admin_like(column: str, semantic_lower: str, warnings: list[str]) -> bool:
+    lower = column.lower()
+    admin_tokens = [
+        "startdate", "enddate", "recordeddate", "status", "ipaddress", "recipient", "email", "phone",
+        "externalreference", "latitude", "longitude", "distributionchannel", "userlanguage", "duration",
+        "progress", "finished", "location", "fraud", "duplicate", "responseid", "respondentid",
+        "transaction_id", "session_id", "redirecturl", "redirect_url", "importid", "display order",
+        "selected choice", "panelist", "panel_id", "supplier", "sample_source",
+    ]
+    if "likely_identifier" in warnings:
+        return True
+    return any(token in lower or token in semantic_lower for token in admin_tokens)
+
+
+def _looks_segment_like(column: str, semantic_lower: str) -> bool:
+    lower = column.lower()
+    if any(token in lower or token in semantic_lower for token in ["score", "index", "rating", "satisfaction", "recommend", "likelihood", "agree", "agreement", "importance"]):
+        return False
+    segment_tokens = [
+        "segment", "region", "country", "state", "dma", "msa", "postal", "zip", "department",
+        "team", "role", "title", "tenure", "company size", "company_size", "industry", "market",
+        "gender", "age", "generation", "income", "persona", "cohort",
+    ]
+    return any(token in lower or token in semantic_lower for token in segment_tokens)
+
+
+def _is_low_signal_code_name(column: str) -> bool:
+    lower = column.lower()
+    return bool(
+        re.fullmatch(r"v\d+", lower)
+        or re.fullmatch(r"q\d+(?:_\d+)+", lower)
+        or re.fullmatch(r"q\d+", lower)
+        or re.fullmatch(r"s\d+(?:_\d+)?", lower)
+        or re.fullmatch(r"[a-z]{1,3}", lower)
+    )
+
+
+def _semantic_class(series: pd.Series, column: str, inferred_type: str, warnings: list[str], column_context: dict | None = None) -> tuple[str, str]:
+    column_context = column_context or {}
+    semantic_lower = _semantic_lower(column, column_context)
+    lower = column.lower()
+    non_null = series.dropna()
+    distinct = int(non_null.nunique(dropna=True))
+
+    if inferred_type == "empty":
+        return "empty", "low"
+
+    if _looks_admin_like(column, semantic_lower, warnings):
+        return "identifier_helper", "high"
+
+    if inferred_type == "text":
+        if any(token in lower or token in semantic_lower for token in ["comment", "verbatim", "open end", "open_end", "specify", "free text"]):
+            return "free_text", "high"
+        return "labeled_categorical", "medium"
+
+    if inferred_type == "mixed":
+        return "ambiguous_numeric", "low"
+
+    if inferred_type == "categorical":
+        if _looks_segment_like(column, semantic_lower):
+            return "labeled_categorical", "high"
+        if distinct <= LIKERT_MAX_UNIQUE and any(token in semantic_lower for token in ["agree", "satisf", "recommend", "likely", "ease", "quality", "support", "trust", "rate"]):
+            return "ordinal_labeled", "medium"
+        return "labeled_categorical", "medium"
+
+    if inferred_type in {"numeric", "numeric_like_text"}:
+        if "likely_likert_or_coded_categorical" in warnings:
+            if any(token in semantic_lower for token in ["nps", "recommend", "likelihood to recommend", "satisfaction", "sat", "agreement", "agree", "importance", "frequency", "ease", "quality", "trust", "support", "rating", "score"]):
+                return "ordinal_numeric", "high"
+            if _looks_segment_like(column, semantic_lower):
+                return "nominal_coded_numeric", "high"
+            if _is_low_signal_code_name(column):
+                return "ordinal_numeric", "low"
+            return "ordinal_numeric", "medium"
+        if distinct <= 12:
+            if any(token in semantic_lower for token in ["index", "score", "rating", "satisfaction", "recommend", "likelihood", "agree", "agreement", "importance", "support", "trust", "quality", "ease"]):
+                return "ordinal_numeric", "medium"
+            if _looks_segment_like(column, semantic_lower):
+                return "nominal_coded_numeric", "high"
+            return "nominal_coded_numeric", "low"
+        return "continuous_numeric", "high"
+
+    return "ambiguous_numeric", "low"
+
+
 def profile_column(df: pd.DataFrame, column: str, column_context: dict | None = None) -> dict:
     series = df[column]
     non_null = series.dropna()
     inferred_type = _inferred_type(series)
     column_context = column_context or {}
+    warnings = _warnings(series, inferred_type)
+    semantic_class, semantic_confidence = _semantic_class(series, column, inferred_type, warnings, column_context)
     profile = {
         "column": column,
         "inferred_type": inferred_type,
+        "semantic_class": semantic_class,
+        "semantic_confidence": semantic_confidence,
         "non_null_count": int(series.notna().sum()),
         "missing_count": int(series.isna().sum()),
         "missing_pct": _missing_pct(series),
         "distinct_count": int(non_null.nunique(dropna=True)),
         "top_values": _top_values(series),
-        "warnings": _warnings(series, inferred_type),
+        "warnings": warnings,
         "sample_values": [str(v) for v in non_null.astype(str).head(5).tolist()],
         "question_text": column_context.get("question_text"),
         "import_id": column_context.get("import_id"),

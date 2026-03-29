@@ -121,6 +121,9 @@ EXCLUSION_REASON_LABELS = {
     "battery_artifact": "Question battery artifact",
     "opaque_code": "Opaque code-style field",
     "choice_order_artifact": "Choice/display-order artifact",
+    "ambiguous_numeric": "Numeric field needs more semantic context",
+    "helper_or_identifier": "Helper/admin field",
+    "candidate_segment": "Possible segment cut",
 }
 
 
@@ -325,6 +328,8 @@ def _family_score(family: str, items: list[dict]) -> float:
 def _target_score(column: str, profile: dict) -> float:
     lower = _semantic_text(column, profile)
     inferred_type = profile.get("inferred_type", "")
+    semantic_class = profile.get("semantic_class", "")
+    semantic_confidence = profile.get("semantic_confidence", "")
     warnings = set(profile.get("warnings", []))
     distinct = int(profile.get("distinct_count", 0) or 0)
     missing_pct = float(profile.get("missing_pct", 0) or 0)
@@ -333,6 +338,8 @@ def _target_score(column: str, profile: dict) -> float:
     if inferred_type not in {"numeric", "numeric_like_text"}:
         return -999
     if "likely_identifier" in warnings or _is_admin_like(column):
+        return -999
+    if semantic_class in {"identifier_helper", "nominal_coded_numeric"}:
         return -999
     if _looks_like_text_artifact(column) or _looks_like_text_artifact(lower):
         return -999
@@ -348,10 +355,16 @@ def _target_score(column: str, profile: dict) -> float:
     score = 0.0
     if any(token in lower for token in TARGET_KEYWORDS_STRONG):
         score += 12
+    if semantic_class == "ordinal_numeric":
+        score += 2
+    if semantic_class == "continuous_numeric":
+        score += 1
+    if semantic_confidence == "low" and _is_low_signal_code_name(column):
+        score -= 3
     if any(token in lower for token in TARGET_KEYWORDS_WEAK):
         score += 4
     if any(token in lower for token in TARGET_KEYWORDS_CANONICAL_OUTCOME):
-        score += 5
+        score += 9
     if any(token in lower for token in CANONICAL_OUTCOME_BONUS_TOKENS):
         score += 6
     if any(token in lower for token in ["index", "engagement", "overall_experience", "overall_value"]):
@@ -414,6 +427,8 @@ def _detect_target(columns: list[str], numeric_columns: list[str], column_profil
 def _predictor_score(column: str, profile: dict, inferred_target: str | None) -> float:
     lower = _semantic_text(column, profile)
     inferred_type = profile.get("inferred_type", "")
+    semantic_class = profile.get("semantic_class", "")
+    semantic_confidence = profile.get("semantic_confidence", "")
     warnings = set(profile.get("warnings", []))
     distinct = int(profile.get("distinct_count", 0) or 0)
     missing_pct = float(profile.get("missing_pct", 0) or 0)
@@ -422,6 +437,18 @@ def _predictor_score(column: str, profile: dict, inferred_target: str | None) ->
 
     if inferred_type in {"numeric", "numeric_like_text"}:
         score += 4
+    if semantic_class == "ordinal_numeric":
+        score += 4
+    if semantic_class == "continuous_numeric":
+        score += 2
+    if semantic_class == "nominal_coded_numeric":
+        score -= 4
+    if semantic_class == "identifier_helper":
+        score -= 12
+    if semantic_class == "ambiguous_numeric":
+        score -= 3
+    if semantic_confidence == "low":
+        score -= 2
     if "likely_likert_or_coded_categorical" in warnings:
         score += 5
     if 3 <= distinct <= 11:
@@ -476,12 +503,17 @@ def _predictor_recommendation(column: str, profile: dict, inferred_target: str |
         return False, ["target"], "numeric", -999
 
     inferred_type = profile.get("inferred_type", "")
+    semantic_class = profile.get("semantic_class", "")
     warnings = set(profile.get("warnings", []))
     lower = column.lower()
     reasons = []
 
     if _is_admin_like(column):
         reasons.append("admin")
+    if semantic_class == "identifier_helper":
+        reasons.append("helper_or_identifier")
+    if semantic_class == "ambiguous_numeric":
+        reasons.append("ambiguous_numeric")
     if "likely_identifier" in warnings:
         reasons.append("likely_identifier")
     if "high_cardinality" in warnings and inferred_type not in {"numeric", "numeric_like_text"}:
@@ -500,6 +532,8 @@ def _predictor_recommendation(column: str, profile: dict, inferred_target: str |
         reasons.append("choice_order_artifact")
     if _looks_like_segment_meta_candidate(column, profile) or _looks_like_segment_meta_candidate(lower, profile):
         reasons.append("meta_candidate")
+    if semantic_class in {"labeled_categorical", "nominal_coded_numeric"} and _looks_like_segment_meta_candidate(column, profile):
+        reasons.append("candidate_segment")
     if _looks_like_brand_tracker_debris(column):
         reasons.append("weak_family")
     if _looks_like_vendor_plumbing(column) or _looks_like_vendor_plumbing(lower):
@@ -534,6 +568,8 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
             "name": col,
             "kind": kind,
             "warnings": profile.get("warnings", []),
+            "semantic_class": profile.get("semantic_class"),
+            "semantic_confidence": profile.get("semantic_confidence"),
             "reasons": reasons,
             "reason_labels": [EXCLUSION_REASON_LABELS.get(reason, reason.replace('_', ' ')) for reason in reasons],
             "score": round(score, 2),
@@ -577,14 +613,34 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
     excluded.extend(overflow_predictors)
 
     meta_candidates = []
+    candidate_segments = []
+    helper_fields = []
+    ambiguous_fields = []
     remaining_excluded = []
     for item in excluded:
-        if "meta_candidate" in item.get("reasons", []):
+        reasons = item.get("reasons", [])
+        if "candidate_segment" in reasons:
+            candidate_segments.append(item)
             meta_candidates.append(item)
+        elif "meta_candidate" in reasons:
+            meta_candidates.append(item)
+        elif "helper_or_identifier" in reasons or "admin" in reasons:
+            helper_fields.append(item)
+            remaining_excluded.append(item)
+        elif "ambiguous_numeric" in reasons:
+            ambiguous_fields.append(item)
+            remaining_excluded.append(item)
         else:
             remaining_excluded.append(item)
     excluded = remaining_excluded
+    meta_candidates = list({item["name"]: item for item in meta_candidates}.values())
+    candidate_segments = list({item["name"]: item for item in candidate_segments}.values())
+    helper_fields = list({item["name"]: item for item in helper_fields}.values())
+    ambiguous_fields = list({item["name"]: item for item in ambiguous_fields}.values())
     meta_candidates.sort(key=lambda item: (-item.get("score", 0), item["name"]))
+    candidate_segments.sort(key=lambda item: (-item.get("score", 0), item["name"]))
+    helper_fields.sort(key=lambda item: (-item.get("score", 0), item["name"]))
+    ambiguous_fields.sort(key=lambda item: (-item.get("score", 0), item["name"]))
 
     outcome_candidates = []
     for col in columns:
@@ -616,7 +672,7 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
         schema_clarity = "codes_only"
 
     recommended_labels = {}
-    for item in [*predictors, *meta_candidates[:12], *excluded]:
+    for item in [*predictors, *candidate_segments[:12], *meta_candidates[:12], *helper_fields[:12], *ambiguous_fields[:12], *excluded]:
         label = item.get("recommended_label")
         if label:
             recommended_labels[item["name"]] = label
@@ -625,11 +681,20 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
         if target_label:
             recommended_labels[target] = target_label
 
+    ambiguity_summary = {
+        "needs_field_semantics": [item["name"] for item in ambiguous_fields[:8]],
+        "candidate_segments": [item["name"] for item in candidate_segments[:8]],
+        "helper_fields": [item["name"] for item in helper_fields[:8]],
+    }
+
     return {
         "target": target,
         "predictors": predictors,
         "excluded": excluded,
         "meta_candidates": meta_candidates[:12],
+        "candidate_segments": candidate_segments[:12],
+        "helper_fields": helper_fields[:12],
+        "ambiguous_fields": ambiguous_fields[:12],
         "recommended_labels": recommended_labels,
         "usable_rows": usable_rows,
         "confidence": confidence,
@@ -637,6 +702,7 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
         "driver_shortlist_limit": DEFAULT_RECOMMENDED_DRIVER_LIMIT,
         "driver_pool_count": len(predictor_pool),
         "schema_clarity": schema_clarity,
+        "ambiguity_summary": ambiguity_summary,
         "family_limit": MAX_PER_FAMILY,
         "ranked_families": [{"family": family, "score": score, "count": len(items)} for family, score, items in ranked_families[:8]],
     }

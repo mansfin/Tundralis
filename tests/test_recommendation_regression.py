@@ -26,17 +26,24 @@ class TestRecommendationRegression(unittest.TestCase):
         excluded = {item["name"]: item for item in recommendation["excluded"]}
         included = set(shortlist)
         meta_candidates = {item["name"]: item for item in recommendation.get("meta_candidates", [])}
-        suppressed = set(excluded) | set(meta_candidates)
+        candidate_segments = {item["name"]: item for item in recommendation.get("candidate_segments", [])}
+        helper_fields = {item["name"]: item for item in recommendation.get("helper_fields", [])}
+        ambiguous_fields = {item["name"]: item for item in recommendation.get("ambiguous_fields", [])}
+        suppressed = set(excluded) | set(meta_candidates) | set(candidate_segments) | set(helper_fields) | set(ambiguous_fields)
 
         must_include_hits = [name for name in case.get("must_include", []) if name in included]
         must_exclude_hits = [name for name in case.get("must_exclude", []) if name in suppressed]
-        must_meta_hits = [name for name in case.get("must_surface_meta", []) if name in meta_candidates]
+        surfaced_meta = meta_candidates | candidate_segments
+        must_meta_hits = [name for name in case.get("must_surface_meta", []) if name in surfaced_meta]
 
         return {
             "target": recommendation["target"],
             "shortlist": shortlist,
             "excluded": excluded,
             "meta_candidates": meta_candidates,
+            "candidate_segments": candidate_segments,
+            "helper_fields": helper_fields,
+            "ambiguous_fields": ambiguous_fields,
             "recommendation": recommendation,
             "include_recall": len(must_include_hits) / max(len(case.get("must_include", [])), 1),
             "exclude_recall": len(must_exclude_hits) / max(len(case.get("must_exclude", [])), 1),

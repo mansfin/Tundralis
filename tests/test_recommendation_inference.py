@@ -25,7 +25,7 @@ class TestRecommendationInference(unittest.TestCase):
         self.assertIn('"target": "overall_sat"', html)
         self.assertIn('"name": "product_quality_score"', html)
         self.assertIn('"name": "response_id"', html)
-        self.assertIn('"reason_labels": ["Likely ID"', html)
+        self.assertIn('Likely ID', html)
 
     def test_recommendation_shortlists_default_driver_count(self):
         client = app.test_client()

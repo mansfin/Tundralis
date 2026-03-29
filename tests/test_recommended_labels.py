@@ -27,6 +27,20 @@ class TestRecommendedLabels(unittest.TestCase):
         self.assertTrue(recommended_labels)
         self.assertTrue(any(len(label) > 8 for label in recommended_labels.values()))
 
+    def test_recommendation_surfaces_semantic_buckets_for_ambiguous_raw_export(self):
+        bundle = build_prep_bundle(ROOT / "data" / "fixtures" / "ironclad_brand_perceptions_raw.csv")
+        df = bundle.working_df
+        recommendation = _build_recommendation(
+            list(df.columns),
+            bundle.column_profiles,
+            df.select_dtypes(include="number").columns.tolist(),
+        )
+        self.assertIn("candidate_segments", recommendation)
+        self.assertIn("helper_fields", recommendation)
+        self.assertIn("ambiguity_summary", recommendation)
+        self.assertTrue(recommendation["candidate_segments"])
+        self.assertTrue(recommendation["helper_fields"])
+
 
 if __name__ == "__main__":
     unittest.main()

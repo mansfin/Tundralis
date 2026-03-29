@@ -14,17 +14,21 @@ class TestProfiling(unittest.TestCase):
 
         overall = profiles["overall_sat"]
         self.assertEqual(overall["inferred_type"], "numeric")
+        self.assertEqual(overall["semantic_class"], "ordinal_numeric")
+        self.assertEqual(overall["semantic_confidence"], "high")
         self.assertIn("likely_likert_or_coded_categorical", overall["warnings"])
         self.assertGreater(overall["missing_pct"], 0)
         self.assertEqual(overall["numeric_summary"]["min"], 1.0)
         self.assertEqual(overall["numeric_summary"]["max"], 7.0)
 
         response_id = profiles["response_id"]
+        self.assertEqual(response_id["semantic_class"], "identifier_helper")
         self.assertIn("likely_identifier", response_id["warnings"])
         self.assertIn("high_cardinality", response_id["warnings"])
 
         segment = profiles["segment"]
         self.assertEqual(segment["inferred_type"], "categorical")
+        self.assertEqual(segment["semantic_class"], "labeled_categorical")
         self.assertGreaterEqual(segment["distinct_count"], 3)
         self.assertTrue(any(row["value"] == "SMB" for row in segment["top_values"]))
 
