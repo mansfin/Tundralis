@@ -97,6 +97,9 @@ TARGET_KEYWORDS_CANONICAL_OUTCOME = [
 ATTRIBUTE_STYLE_TOKENS = [
     "quality", "support", "friendliness", "handling", "checkin", "ease", "reliability", "tools", "setup", "reporting", "recognition", "growth", "workload", "feature", "implementation", "trust", "bag", "staff", "fare",
 ]
+CANONICAL_OUTCOME_BONUS_TOKENS = [
+    "engagement_index", "nps_score", "overall_experience", "overall_sat", "overall_satisfaction", "likelihood_to_recommend",
+]
 DEFAULT_RECOMMENDED_DRIVER_LIMIT = 24
 MAX_PER_FAMILY = 3
 EXCLUSION_REASON_LABELS = {
@@ -106,6 +109,7 @@ EXCLUSION_REASON_LABELS = {
     "mixed_numeric_text": "Mixed numeric/text",
     "text": "Open text or free text",
     "categorical": "Categorical metadata field",
+    "meta_candidate": "Better treated as segment/metadata",
     "admin": "Administrative/system field",
     "derived_target": "Looks derived from the outcome",
     "target": "Selected outcome",
@@ -116,8 +120,31 @@ EXCLUSION_REASON_LABELS = {
     "geo_artifact": "Geography/postal artifact",
     "battery_artifact": "Question battery artifact",
     "opaque_code": "Opaque code-style field",
+    "choice_order_artifact": "Choice/display-order artifact",
 }
 
+
+
+
+def _semantic_text(column: str, profile: dict) -> str:
+    return str(profile.get("semantic_text") or profile.get("question_text") or column).lower()
+
+
+def _looks_like_descriptive_construct(column: str, profile: dict) -> bool:
+    lower = _semantic_text(column, profile)
+    inferred_type = profile.get("inferred_type", "")
+    warnings = set(profile.get("warnings", []))
+    descriptive_tokens = [
+        "support", "manager", "workload", "growth", "recognition", "quality", "value",
+        "trust", "ease", "tools", "systems", "friendliness", "experience", "opportunities",
+    ]
+    if inferred_type not in {"numeric", "numeric_like_text"}:
+        return False
+    if "likely_likert_or_coded_categorical" not in warnings:
+        return False
+    if any(token in lower for token in descriptive_tokens):
+        return True
+    return False
 
 def _is_admin_like(column: str) -> bool:
     lower = column.lower()
@@ -141,7 +168,13 @@ def _column_family(column: str) -> str:
 
 def _is_low_signal_code_name(column: str) -> bool:
     lower = column.lower()
-    return bool(re.fullmatch(r"v\d+", lower) or re.fullmatch(r"q\d+(?:_\d+)+", lower) or re.fullmatch(r"q\d+", lower))
+    return bool(
+        re.fullmatch(r"v\d+", lower)
+        or re.fullmatch(r"q\d+(?:_\d+)+", lower)
+        or re.fullmatch(r"q\d+", lower)
+        or re.fullmatch(r"s\d+(?:_\d+)?", lower)
+        or re.fullmatch(r"[a-z]{1,3}", lower)
+    )
 
 
 def _looks_like_brand_tracker_debris(column: str) -> bool:
@@ -172,6 +205,53 @@ def _looks_like_geo_artifact(column: str) -> bool:
 def _looks_like_battery_artifact(column: str) -> bool:
     lower = column.lower()
     return bool(re.fullmatch(r"q\d+(?:\.\d+)?_\d+_text", lower) or re.fullmatch(r"q\d+(?:\.\d+)?_\d+", lower))
+
+
+def _looks_like_vendor_plumbing(column: str) -> bool:
+    lower = column.lower()
+    vendor_tokens = [
+        "purespectrum", "redirecturl", "redirect_url", "transaction_id", "signaturevalue",
+        "session_id", "panelist", "panel_id", "vendor", "supplier", "sample_source",
+    ]
+    return any(token in lower for token in vendor_tokens)
+
+
+def _looks_like_choice_order_artifact(column: str) -> bool:
+    lower = column.lower()
+    return bool(
+        re.fullmatch(r"[a-z]?q?\d+_do_\d+", lower)
+        or re.fullmatch(r"s\d+_do_\d+", lower)
+        or re.fullmatch(r"q\d+_do", lower)
+        or "display order" in lower
+        or lower.endswith("_do")
+    )
+
+
+def _looks_like_segment_meta_candidate(column: str, profile: dict) -> bool:
+    lower = column.lower()
+    warnings = set(profile.get("warnings", []))
+    distinct = int(profile.get("distinct_count", 0) or 0)
+    inferred_type = profile.get("inferred_type", "")
+    if _looks_like_descriptive_construct(column, profile):
+        return False
+    meta_tokens = [
+        "segment", "wave", "cohort", "market", "region", "department", "location",
+        "country", "state", "team", "role", "title", "persona", "industry", "size",
+        "company_size", "employee_count", "age", "gender", "tenure", "function", "gc",
+    ]
+    if any(token in lower for token in meta_tokens):
+        return True
+    if _looks_like_choice_order_artifact(column) or 'display order' in lower:
+        return True
+    if inferred_type == "categorical" and 2 <= distinct <= 20 and (lower.startswith("s") or lower.startswith("demo_")):
+        return True
+    if inferred_type in {"numeric", "numeric_like_text"} and distinct <= 12 and lower.endswith("_do"):
+        return True
+    if inferred_type in {"categorical", "numeric_like_text"} and _is_low_signal_code_name(column) and distinct <= 20 and (lower.startswith("s") or len(lower) <= 3):
+        return True
+    if inferred_type == "categorical" and "likely_likert_or_coded_categorical" not in warnings and 2 <= distinct <= 20 and len(lower) <= 5 and '_' not in lower and ' ' not in lower:
+        return True
+    return False
 
 
 def _interpretability_score(column: str) -> float:
@@ -211,7 +291,7 @@ def _family_score(family: str, items: list[dict]) -> float:
 
 
 def _target_score(column: str, profile: dict) -> float:
-    lower = column.lower()
+    lower = _semantic_text(column, profile)
     inferred_type = profile.get("inferred_type", "")
     warnings = set(profile.get("warnings", []))
     distinct = int(profile.get("distinct_count", 0) or 0)
@@ -221,6 +301,14 @@ def _target_score(column: str, profile: dict) -> float:
     if inferred_type not in {"numeric", "numeric_like_text"}:
         return -999
     if "likely_identifier" in warnings or _is_admin_like(column):
+        return -999
+    if _looks_like_text_artifact(column) or _looks_like_text_artifact(lower):
+        return -999
+    if any(token in lower for token in ["other (please specify)", "other please specify", "open end", "free text", "verbatim"]):
+        return -999
+    if _looks_like_choice_order_artifact(column) or 'display order' in lower or 'selected choice' in lower:
+        return -999
+    if _looks_like_vendor_plumbing(column) or _looks_like_vendor_plumbing(lower):
         return -999
     if non_null < 25 or distinct < 2:
         return -999
@@ -232,6 +320,8 @@ def _target_score(column: str, profile: dict) -> float:
         score += 4
     if any(token in lower for token in TARGET_KEYWORDS_CANONICAL_OUTCOME):
         score += 5
+    if any(token in lower for token in CANONICAL_OUTCOME_BONUS_TOKENS):
+        score += 6
     if any(token in lower for token in ["index", "engagement", "overall_experience", "overall_value"]):
         score += 3
     if "likely_likert_or_coded_categorical" in warnings:
@@ -242,14 +332,25 @@ def _target_score(column: str, profile: dict) -> float:
         score += 2
     if distinct > 40:
         score -= 4
-    if _looks_like_brand_tracker_debris(column):
+    if _looks_like_brand_tracker_debris(column) or _looks_like_brand_tracker_debris(lower):
         score -= 8
+    if _looks_like_vendor_plumbing(column) or _looks_like_vendor_plumbing(lower):
+        score -= 14
+    if _looks_like_choice_order_artifact(column) or 'display order' in lower:
+        score -= 14
+    if _looks_like_segment_meta_candidate(column, profile) or _looks_like_segment_meta_candidate(lower, profile):
+        score -= 8
+    if distinct <= 3 and not any(token in lower for token in TARGET_KEYWORDS_CANONICAL_OUTCOME) and _is_low_signal_code_name(column):
+        score -= 6
     if any(token in lower for token in ATTRIBUTE_STYLE_TOKENS) and not any(token in lower for token in TARGET_KEYWORDS_CANONICAL_OUTCOME):
         score -= 3
-    if lower.startswith('q') or lower.startswith('v'):
-        score -= 2
+    if lower.startswith('q') or lower.startswith('v') or re.fullmatch(r's\d+(?:_\d+)?', lower):
+        score -= 5
+    if _is_low_signal_code_name(column):
+        score -= 5
     if "text" in lower or "comment" in lower or "open" in lower:
         score -= 8
+    score += _interpretability_score(column)
     return score
 
 
@@ -260,15 +361,26 @@ def _detect_target(columns: list[str], numeric_columns: list[str], column_profil
         score = _target_score(col, profile)
         if score > -999:
             scored.append((score, col))
-    if not scored and numeric_columns:
-        fallback = [col for col in numeric_columns if not _is_admin_like(col)]
-        return fallback[0] if fallback else numeric_columns[0]
     scored.sort(key=lambda item: (-item[0], item[1]))
-    return scored[0][1] if scored else None
+    if scored and scored[0][0] >= 2:
+        return scored[0][1]
+    fallback = []
+    for col in numeric_columns:
+        if _is_admin_like(col):
+            continue
+        profile = column_profiles.get(col, {})
+        if _target_score(col, profile) <= -999:
+            continue
+        if _looks_like_choice_order_artifact(col) or _looks_like_segment_meta_candidate(col, profile):
+            continue
+        if _is_low_signal_code_name(col):
+            continue
+        fallback.append(col)
+    return fallback[0] if fallback else None
 
 
 def _predictor_score(column: str, profile: dict, inferred_target: str | None) -> float:
-    lower = column.lower()
+    lower = _semantic_text(column, profile)
     inferred_type = profile.get("inferred_type", "")
     warnings = set(profile.get("warnings", []))
     distinct = int(profile.get("distinct_count", 0) or 0)
@@ -303,16 +415,22 @@ def _predictor_score(column: str, profile: dict, inferred_target: str | None) ->
             score -= 5
         if family == target_family:
             score -= 6
-    if any(token in lower for token in ["other", "specify", "text", "open end", "comment"]):
+    if any(token in lower for token in ["other", "specify", "text", "open end", "comment", "selected choice"]):
         score -= 8
-    if _looks_like_text_artifact(column):
+    if _looks_like_text_artifact(column) or _looks_like_text_artifact(lower):
         score -= 10
-    if _looks_like_geo_artifact(column):
+    if _looks_like_geo_artifact(column) or _looks_like_geo_artifact(lower):
         score -= 9
-    if _looks_like_battery_artifact(column):
+    if _looks_like_battery_artifact(column) or _looks_like_battery_artifact(lower):
         score -= 7
-    if _looks_like_brand_tracker_debris(column):
+    if _looks_like_choice_order_artifact(column) or 'display order' in lower:
+        score -= 12
+    if _looks_like_segment_meta_candidate(column, profile) or _looks_like_segment_meta_candidate(lower, profile):
+        score -= 7
+    if _looks_like_brand_tracker_debris(column) or _looks_like_brand_tracker_debris(lower):
         score -= 9
+    if _looks_like_vendor_plumbing(column) or _looks_like_vendor_plumbing(lower):
+        score -= 15
     score += _interpretability_score(column)
     if family in {"q", "v_generic"}:
         score -= 4
@@ -340,14 +458,20 @@ def _predictor_recommendation(column: str, profile: dict, inferred_target: str |
         reasons.append("text")
     if inferred_type == "mixed":
         reasons.append("mixed_numeric_text")
-    if _looks_like_text_artifact(column):
+    if _looks_like_text_artifact(column) or _looks_like_text_artifact(lower):
         reasons.append("text_artifact")
-    if _looks_like_geo_artifact(column):
+    if _looks_like_geo_artifact(column) or _looks_like_geo_artifact(lower):
         reasons.append("geo_artifact")
-    if _looks_like_battery_artifact(column):
+    if _looks_like_battery_artifact(column) or _looks_like_battery_artifact(lower):
         reasons.append("battery_artifact")
+    if _looks_like_choice_order_artifact(column):
+        reasons.append("choice_order_artifact")
+    if _looks_like_segment_meta_candidate(column, profile) or _looks_like_segment_meta_candidate(lower, profile):
+        reasons.append("meta_candidate")
     if _looks_like_brand_tracker_debris(column):
         reasons.append("weak_family")
+    if _looks_like_vendor_plumbing(column) or _looks_like_vendor_plumbing(lower):
+        reasons.append("admin")
     if inferred_type == "categorical" and not profile.get("numeric_summary") and "likely_likert_or_coded_categorical" not in warnings:
         reasons.append("categorical")
     if inferred_target and (inferred_target.lower() in lower or lower in inferred_target.lower()) and column != inferred_target:
@@ -418,10 +542,21 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
 
     excluded.extend(overflow_predictors)
 
+    meta_candidates = []
+    remaining_excluded = []
+    for item in excluded:
+        if "meta_candidate" in item.get("reasons", []):
+            meta_candidates.append(item)
+        else:
+            remaining_excluded.append(item)
+    excluded = remaining_excluded
+    meta_candidates.sort(key=lambda item: (-item.get("score", 0), item["name"]))
+
     outcome_candidates = []
     for col in columns:
-        score = _target_score(col, column_profiles.get(col, {}))
-        if score > -999:
+        profile = column_profiles.get(col, {})
+        score = _target_score(col, profile)
+        if score > -999 and not _looks_like_text_artifact(col) and not _looks_like_choice_order_artifact(col):
             outcome_candidates.append({"name": col, "score": round(score, 2)})
     outcome_candidates.sort(key=lambda item: (-item["score"], item["name"]))
 
@@ -441,14 +576,16 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
     elif target and len(predictors) >= 3:
         confidence = "medium"
 
+    top_outcome_score = outcome_candidates[0]["score"] if outcome_candidates else -999
     schema_clarity = "described"
-    if target and all(candidate["score"] < 8 for candidate in outcome_candidates[:1]):
+    if (not target) or top_outcome_score < 8:
         schema_clarity = "codes_only"
 
     return {
         "target": target,
         "predictors": predictors,
         "excluded": excluded,
+        "meta_candidates": meta_candidates[:12],
         "usable_rows": usable_rows,
         "confidence": confidence,
         "outcome_candidates": outcome_candidates[:5],

@@ -5,6 +5,8 @@ from math import isfinite
 
 import pandas as pd
 
+from tundralis.utils import get_qualtrics_column_metadata
+
 
 LIKERT_MAX_UNIQUE = 11
 HIGH_CARDINALITY_RATIO = 0.5
@@ -101,10 +103,11 @@ def _warnings(series: pd.Series, inferred_type: str) -> list[str]:
     return warnings
 
 
-def profile_column(df: pd.DataFrame, column: str) -> dict:
+def profile_column(df: pd.DataFrame, column: str, column_context: dict | None = None) -> dict:
     series = df[column]
     non_null = series.dropna()
     inferred_type = _inferred_type(series)
+    column_context = column_context or {}
     profile = {
         "column": column,
         "inferred_type": inferred_type,
@@ -115,6 +118,9 @@ def profile_column(df: pd.DataFrame, column: str) -> dict:
         "top_values": _top_values(series),
         "warnings": _warnings(series, inferred_type),
         "sample_values": [str(v) for v in non_null.astype(str).head(5).tolist()],
+        "question_text": column_context.get("question_text"),
+        "import_id": column_context.get("import_id"),
+        "semantic_text": column_context.get("semantic_text") or column,
     }
 
     numeric_summary = _numeric_summary(series)
@@ -126,4 +132,8 @@ def profile_column(df: pd.DataFrame, column: str) -> dict:
 
 def profile_dataframe(df: pd.DataFrame, sample_rows: int = PROFILE_SAMPLE_ROWS) -> dict[str, dict]:
     profile_df = df.head(sample_rows) if sample_rows and len(df) > sample_rows else df
-    return {column: profile_column(profile_df, column) for column in profile_df.columns}
+    qualtrics_metadata = get_qualtrics_column_metadata(df)
+    return {
+        column: profile_column(profile_df, column, qualtrics_metadata.get(column))
+        for column in profile_df.columns
+    }

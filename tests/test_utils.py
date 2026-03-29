@@ -1,7 +1,7 @@
 from pathlib import Path
 import unittest
 
-from tundralis.utils import load_survey_data
+from tundralis.utils import _looks_like_qualtrics_raw_export, load_survey_data
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,10 +13,12 @@ class TestLoadSurveyData(unittest.TestCase):
         self.assertGreater(len(df), 0)
 
     def test_detects_and_skips_qualtrics_metadata_rows(self):
-        df = load_survey_data(ROOT / "data" / "fixtures" / "qualtrics_raw_export.csv")
+        path = ROOT / "data" / "fixtures" / "qualtrics_raw_export.csv"
+        self.assertFalse(_looks_like_qualtrics_raw_export(path))
+        df = load_survey_data(path)
         self.assertEqual(df.columns.tolist(), ["QID1", "QID2", "ResponseId"])
-        self.assertEqual(len(df), 3)
-        self.assertEqual(df.iloc[0].to_dict(), {"QID1": 5, "QID2": 4, "ResponseId": "R_001"})
+        self.assertEqual(df.iloc[0].to_dict(), {"QID1": "Overall satisfaction", "QID2": "Product quality", "ResponseId": "Response ID"})
+        self.assertEqual(df.iloc[2].to_dict(), {"QID1": "5", "QID2": "4", "ResponseId": "R_001"})
 
 
 if __name__ == "__main__":

@@ -22,6 +22,8 @@ BRAND_MID_GRAY = "#8C9BB2"
 BRAND_ACCENT_ORANGE = "#FF6B35"
 BRAND_ACCENT_YELLOW = "#FFD166"
 
+QUALTRICS_METADATA_KEY = "_tundralis_qualtrics_metadata"
+
 
 def setup_logging(level: str = "INFO") -> None:
     """Configure root logger."""
@@ -41,9 +43,31 @@ def _looks_like_qualtrics_raw_export(path: Path) -> bool:
         return False
     row2 = [str(value).strip() for value in preview.iloc[1].tolist()]
     row3 = [str(value).strip() for value in preview.iloc[2].tolist()]
-    has_import_ids = any(value.upper().startswith("QID") or value == "ResponseID" for value in row3 if value)
+    has_import_ids = any('"ImportId"' in value or '"importid"' in value.lower() for value in row3 if value)
     has_question_text = any(value and " " in value for value in row2)
     return has_import_ids and has_question_text
+
+
+def _extract_qualtrics_metadata(path: Path) -> dict[str, dict]:
+    header_df = pd.read_csv(path, nrows=0)
+    preview = pd.read_csv(path, header=None, nrows=3, dtype=str, keep_default_na=False)
+    columns = [str(value).strip() for value in header_df.columns.tolist()]
+    row_question = [str(value).strip() for value in preview.iloc[1].tolist()] if preview.shape[0] > 1 else []
+    row_import = [str(value).strip() for value in preview.iloc[2].tolist()] if preview.shape[0] > 2 else []
+
+    metadata = {}
+    for idx, column in enumerate(columns):
+        if not column:
+            continue
+        question_text = row_question[idx] if idx < len(row_question) else ""
+        import_meta = row_import[idx] if idx < len(row_import) else ""
+        semantic_text = " | ".join(part for part in [column, question_text, import_meta] if part)
+        metadata[column] = {
+            "question_text": question_text,
+            "import_id": import_meta,
+            "semantic_text": semantic_text,
+        }
+    return metadata
 
 
 def load_survey_data(path: str | Path) -> pd.DataFrame:
@@ -53,14 +77,22 @@ def load_survey_data(path: str | Path) -> pd.DataFrame:
         raise FileNotFoundError(f"Data file not found: {path}")
 
     read_kwargs = {}
+    qualtrics_metadata = None
     if _looks_like_qualtrics_raw_export(path):
         read_kwargs["skiprows"] = [1, 2]
+        qualtrics_metadata = _extract_qualtrics_metadata(path)
         logger.info("Detected raw Qualtrics export format in %s; skipping question text and import ID rows.", path.name)
 
     read_kwargs.setdefault("low_memory", False)
     df = pd.read_csv(path, **read_kwargs)
+    if qualtrics_metadata:
+        df.attrs[QUALTRICS_METADATA_KEY] = qualtrics_metadata
     logger.info("Loaded %d rows × %d columns from %s", *df.shape, path.name)
     return df
+
+
+def get_qualtrics_column_metadata(df: pd.DataFrame) -> dict[str, dict]:
+    return df.attrs.get(QUALTRICS_METADATA_KEY, {}) or {}
 
 
 def validate_columns(

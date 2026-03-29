@@ -89,5 +89,22 @@
       "Spirit"
     ],
     "notes": "Messy product/NPS export with country/state metadata, text artifacts, battery codes, and brand-name binary fields."
+  },
+  {
+    "name": "ironclad_brand_perceptions_raw",
+    "csv": "data/fixtures/ironclad_brand_perceptions_raw.csv",
+    "expected_target": null,
+    "expected_schema_clarity": "codes_only",
+    "must_include": [],
+    "must_exclude": [
+      "Q13_DO_10",
+      "gc",
+      "S2"
+    ],
+    "must_surface_meta": [
+      "company_size",
+      "gc"
+    ],
+    "notes": "Real raw Qualtrics export with coded headers and display-order helper columns; should avoid bogus target inference and reroute metadata candidates."
   }
 ]

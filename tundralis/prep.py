@@ -6,7 +6,7 @@ from pathlib import Path
 from tundralis.profiling import profile_dataframe
 from tundralis.segments import normalize_segment_definitions, preview_segments
 from tundralis.transforms import apply_recode_transforms
-from tundralis.utils import load_survey_data
+from tundralis.utils import QUALTRICS_METADATA_KEY, load_survey_data
 
 
 @dataclass
@@ -26,6 +26,8 @@ def build_prep_bundle(
 ) -> PrepBundle:
     raw_df = load_survey_data(data_path)
     working_df = apply_recode_transforms(raw_df, recode_definitions or [])
+    if raw_df.attrs.get(QUALTRICS_METADATA_KEY):
+        working_df.attrs[QUALTRICS_METADATA_KEY] = raw_df.attrs[QUALTRICS_METADATA_KEY]
     normalized_segments = normalize_segment_definitions(segment_definitions or [], working_df)
     return PrepBundle(
         raw_df=raw_df,
