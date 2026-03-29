@@ -181,6 +181,8 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn('"output_column": "is_apac"', html)
         self.assertIn('let savedPredictorSelections = ["product_quality_score", "ease_use_score"]', html)
         self.assertIn('let savedSemanticOverrides = {"overall_sat": "ordinal_numeric", "segment": "labeled_categorical"}', html)
+        self.assertIn('schemaConfidenceMeta', html)
+        self.assertIn('Object.keys(savedSemanticOverrides || {}).length', html)
         self.assertIn('Overall satisfaction', html)
 
     def test_inspect_failure_returns_error_id_and_logs_traceback(self):

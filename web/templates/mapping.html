@@ -84,6 +84,7 @@
                 <div id="schemaConfidenceBanner" class="schema-banner">
                   <div class="schema-banner-title" id="schemaConfidenceTitle">Review suggested schema</div>
                   <div class="schema-banner-copy" id="schemaConfidenceCopy">Tundralis is checking whether this file includes descriptive labels or code-style field names.</div>
+                  <div class="schema-banner-copy" id="schemaConfidenceMeta"></div>
                 </div>
                 <div class="field-grid recommendation-summary-grid">
                   <div class="selected-item">
@@ -620,6 +621,7 @@
     const schemaConfidenceBanner = document.getElementById('schemaConfidenceBanner');
     const schemaConfidenceTitle = document.getElementById('schemaConfidenceTitle');
     const schemaConfidenceCopy = document.getElementById('schemaConfidenceCopy');
+    const schemaConfidenceMeta = document.getElementById('schemaConfidenceMeta');
     const candidateSegmentCount = document.getElementById('candidateSegmentCount');
     const candidateSegmentCopy = document.getElementById('candidateSegmentCopy');
     const helperFieldCount = document.getElementById('helperFieldCount');
@@ -691,15 +693,28 @@
 
     function renderSchemaConfidenceBanner(confidence) {
       const clarity = recommendationState.schema_clarity || 'described';
+      const overrideCount = Object.keys(savedSemanticOverrides || {}).length;
       schemaConfidenceBanner.className = `schema-banner schema-banner-${clarity} schema-banner-${confidence}`;
+      schemaConfidenceMeta.textContent = overrideCount
+        ? `${overrideCount} field${overrideCount === 1 ? '' : 's'} clarified by you.`
+        : 'No manual semantic clarifications yet.';
       if (clarity === 'codes_only' && confidence === 'low') {
-        schemaConfidenceTitle.textContent = 'Needs clarification';
-        schemaConfidenceCopy.textContent = 'This file appears to use code-style field names, and the recommendation confidence is low. Confirm the outcome and improve labels before running.';
+        schemaConfidenceTitle.textContent = overrideCount ? 'Clarified, but still low confidence' : 'Needs clarification';
+        schemaConfidenceCopy.textContent = overrideCount
+          ? 'This file still behaves like a code-style export. Tundralis is using your semantic clarifications, but you should still confirm the outcome and key drivers before running.'
+          : 'This file appears to use code-style field names, and the recommendation confidence is low. Confirm the outcome and improve labels before running.';
         return;
       }
       if (clarity === 'codes_only') {
-        schemaConfidenceTitle.textContent = 'Code-style fields detected';
-        schemaConfidenceCopy.textContent = 'This file looks like it uses variable codes instead of descriptive question text. Tundralis can still recommend a setup, but you may want to upload a codebook or rename key fields.';
+        schemaConfidenceTitle.textContent = overrideCount ? 'Code-style file with user clarifications' : 'Code-style fields detected';
+        schemaConfidenceCopy.textContent = overrideCount
+          ? 'Tundralis is using your clarified numeric meanings on top of a code-style file. Recommendations should be more trustworthy now, but key labels may still need review.'
+          : 'This file looks like it uses variable codes instead of descriptive question text. Tundralis can still recommend a setup, but you may want to upload a codebook or rename key fields.';
+        return;
+      }
+      if (overrideCount) {
+        schemaConfidenceTitle.textContent = 'User-confirmed schema';
+        schemaConfidenceCopy.textContent = 'This file has descriptive signal, and Tundralis is also using your semantic clarifications for ambiguous numeric fields.';
         return;
       }
       schemaConfidenceTitle.textContent = 'Descriptive labels detected';
@@ -733,12 +748,13 @@
         ? `${ambiguousFields.slice(0, 4).map((item) => item.name).join(', ')}${ambiguousFields.length > 4 ? '…' : ''}`
         : 'No extra clarification-needed numeric fields detected.';
 
+      const overrideCount = Object.keys(savedSemanticOverrides || {}).length;
       if (confidence === 'high') {
-        recommendationStatus.textContent = 'Recommended setup is ready';
+        recommendationStatus.textContent = overrideCount ? 'Recommended setup is ready with your clarifications' : 'Recommended setup is ready';
       } else if (confidence === 'medium') {
-        recommendationStatus.textContent = 'Review suggested setup';
+        recommendationStatus.textContent = overrideCount ? 'Review suggested setup with your clarifications' : 'Review suggested setup';
       } else {
-        recommendationStatus.textContent = 'We need your input';
+        recommendationStatus.textContent = overrideCount ? 'Still needs review, but using your clarifications' : 'We need your input';
       }
       renderSchemaConfidenceBanner(confidence);
 
@@ -756,6 +772,9 @@
 
       const ambiguitySummary = recommendationState.ambiguity_summary || {};
       const summaryLines = [];
+      if (overrideCount) {
+        summaryLines.push(`User-confirmed numeric meanings: ${overrideCount}`);
+      }
       if ((ambiguitySummary.candidate_segments || []).length) {
         summaryLines.push(`Possible segment cuts: ${(ambiguitySummary.candidate_segments || []).join(', ')}`);
       }
@@ -772,10 +791,10 @@
       const rankedOutcomes = recommendationState.outcome_candidates || [];
       const alternativeOutcomes = rankedOutcomes.filter((item) => item.name !== outcome).slice(0, 3);
       schemaHint.textContent = recommendationState.schema_clarity === 'codes_only'
-        ? 'This file appears to use code-style column names without descriptive question text. Tundralis can still recommend a setup, but users may need to confirm labels and numeric field meaning more often.'
-        : '';
+        ? `${Object.keys(savedSemanticOverrides || {}).length ? 'User clarifications are active. ' : ''}This file appears to use code-style column names without descriptive question text. Tundralis can still recommend a setup, but users may need to confirm labels and numeric field meaning more often.`
+        : (Object.keys(savedSemanticOverrides || {}).length ? 'User semantic clarifications are active for this setup.' : '');
       recommendationDetailsPanel.innerHTML = `
-        <div><strong>Outcome</strong><div class="sub small">Recommended: ${escapeHtml(outcome)}</div>${alternativeOutcomes.length ? `<div class="sub small">Also considered: ${alternativeOutcomes.map((item) => `${escapeHtml(item.name)} (${item.score})`).join(', ')}</div>` : ''}</div>
+        <div><strong>Outcome</strong><div class="sub small">Recommended: ${escapeHtml(outcome)}</div>${alternativeOutcomes.length ? `<div class="sub small">Also considered: ${alternativeOutcomes.map((item) => `${escapeHtml(item.name)} (${item.score})`).join(', ')}</div>` : ''}${overrideCount ? `<div class="sub small">User semantic clarifications active: ${overrideCount}</div>` : ''}</div>
         <div><strong>Drivers</strong><div class="sub small">${predictors.length} selected for modeling out of ${recommendationState.driver_pool_count || predictors.length} viable candidates. Default shortlist limit: ${recommendationState.driver_shortlist_limit || predictors.length}.</div></div>
         <div><strong>Possible segment cuts</strong><div class="sub small">${candidateSegments.length ? candidateSegments.slice(0, 8).map((item) => `${escapeHtml(item.name)}${(item.reason_labels || []).length ? ` — ${escapeHtml(item.reason_labels.join(', '))}` : ''}`).join('<br>') : 'None surfaced.'}</div></div>
         <div><strong>Helper/admin fields</strong><div class="sub small">${helperFields.length ? helperFields.slice(0, 8).map((item) => `${escapeHtml(item.name)}${(item.reason_labels || []).length ? ` — ${escapeHtml(item.reason_labels.join(', '))}` : ''}`).join('<br>') : 'None surfaced.'}</div></div>
