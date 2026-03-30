@@ -168,6 +168,8 @@
                     <span class="pill numeric">review before run</span>
                   </div>
                   <button type="button" class="button-link secondary outcome-inspect-trigger mono" id="inspectOutcomeButton">—</button>
+                  <div class="sub small" id="recommendedOutcomeLabel">Suggested report label: —</div>
+                  <div class="sub small" id="recommendedOutcomeReason">Tundralis is selecting the main measure you most likely want to explain.</div>
                 </div>
                 <div class="field-grid two">
                   <div>
@@ -602,6 +604,8 @@
     const targetColumnSelect = document.getElementById('targetColumnSelect');
     const targetDisplayNameContainer = document.getElementById('targetDisplayNameContainer');
     const inspectOutcomeButton = document.getElementById('inspectOutcomeButton');
+    const recommendedOutcomeLabel = document.getElementById('recommendedOutcomeLabel');
+    const recommendedOutcomeReason = document.getElementById('recommendedOutcomeReason');
     const recodeType = document.getElementById('recodeType');
     const launchRecodeBuilder = document.getElementById('launchRecodeBuilder');
     const recodeSourceColumn = document.getElementById('recodeSourceColumn');
@@ -759,7 +763,14 @@
       const usableRows = recommendationState.usable_rows ?? columnProfiles[targetColumnSelect.value]?.non_null_count;
       const confidence = recommendationConfidenceState(excluded.length);
 
+      const outcomeLabel = displayNameValue(outcome);
       recommendationOutcome.textContent = outcome;
+      recommendedOutcomeLabel.textContent = outcome && outcome !== '—'
+        ? `Suggested report label: ${outcomeLabel}`
+        : 'Suggested report label: —';
+      recommendedOutcomeReason.textContent = outcome && outcome !== '—'
+        ? 'Tundralis picked this as the strongest candidate business outcome based on name signal, numeric fit, and usable rows.'
+        : 'Pick the main business outcome you want to explain.';
       recommendationDriverCount.textContent = `${predictors.length} selected`;
       recommendationExcludedCount.textContent = `${excluded.length} excluded`;
       recommendationUsableRows.textContent = Number.isFinite(usableRows) ? String(usableRows) : '—';
@@ -1307,12 +1318,16 @@
     function renderRecommendedRenamePanel() {
       const fields = recommendedRenameFields();
       recommendedRenamePanel.innerHTML = fields.length
-        ? fields.map((name) => `
+        ? fields.map((name) => {
+            const suggested = recommendedLabelFor(name) || displayNameValue(name);
+            return `
             <label class="rename-row">
               <span class="mono">${escapeHtml(name)}</span>
+              <div class="sub small">Suggested label: ${escapeHtml(suggested || 'Optional display label')}</div>
               <input type="text" name="display_name__${escapeHtml(name)}" placeholder="${escapeHtml(recommendedLabelFor(name) || 'Optional display label')}" value="${escapeHtml(displayNameValue(name))}">
             </label>
-          `).join('')
+          `;
+          }).join('')
         : '<div class="sub small">No recommended fields yet.</div>';
     }
 

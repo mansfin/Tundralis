@@ -86,6 +86,8 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn("recodeSourceColumnSelector", html)
         self.assertIn("column-selector-search", html)
         self.assertIn("inspectOutcomeButton", html)
+        self.assertIn("recommendedOutcomeLabel", html)
+        self.assertIn("recommendedOutcomeReason", html)
         self.assertIn("Nested condition tree", html)
         self.assertIn("segmentTreeCanvas", html)
         self.assertIn("overall_sat", html)
