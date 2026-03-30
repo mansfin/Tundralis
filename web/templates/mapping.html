@@ -815,10 +815,10 @@
       const labelCoverage = predictors.length
         ? predictors.filter((item) => recommendedLabelFor(item.name)).length
         : 0;
-      const outcomeLabel = recommendedLabelFor(outcome) || displayNameValue(outcome) || outcome;
+      const outcomeDisplayLabel = recommendedLabelFor(outcome) || displayNameValue(outcome) || outcome;
       recommendationExplanation.textContent = confidence === 'high'
-        ? `Tundralis is ready to run KDA on ${predictors.length} candidate driver field${predictors.length === 1 ? '' : 's'} against ${outcomeLabel}. It filtered out ${excluded.length} field${excluded.length === 1 ? '' : 's'} that look like IDs, helper metadata, text responses, or low-signal export debris${reasonSummary ? ` (${reasonSummary})` : ''}.`
-        : `Tundralis found a plausible outcome (${outcomeLabel}) and ${predictors.length} candidate driver field${predictors.length === 1 ? '' : 's'}, but this file still looks messy enough that you should review the setup before running. ${labelCoverage ? `${labelCoverage} recommended label${labelCoverage === 1 ? '' : 's'} are ready to use.` : 'Very few clean labels were inferred automatically.'} ${reasonSummary ? `Top exclusions: ${reasonSummary}.` : ''}`;
+        ? `Tundralis is ready to run KDA on ${predictors.length} candidate driver field${predictors.length === 1 ? '' : 's'} against ${outcomeDisplayLabel}. It filtered out ${excluded.length} field${excluded.length === 1 ? '' : 's'} that look like IDs, helper metadata, text responses, or low-signal export debris${reasonSummary ? ` (${reasonSummary})` : ''}.`
+        : `Tundralis found a plausible outcome (${outcomeDisplayLabel}) and ${predictors.length} candidate driver field${predictors.length === 1 ? '' : 's'}, but this file still looks messy enough that you should review the setup before running. ${labelCoverage ? `${labelCoverage} recommended label${labelCoverage === 1 ? '' : 's'} are ready to use.` : 'Very few clean labels were inferred automatically.'} ${reasonSummary ? `Top exclusions: ${reasonSummary}.` : ''}`;
 
       const ambiguitySummary = recommendationState.ambiguity_summary || {};
       const summaryLines = [];
@@ -1766,7 +1766,7 @@
       draftRules = children.map((child) => ({
         column: child.column,
         operator: child.operator,
-        value_type: child.value_type || (columnProfiles[child.column]?.inferred_type || '').includes('numeric') ? 'numeric' : 'categorical',
+        value_type: child.value_type || (((columnProfiles[child.column]?.inferred_type || '').includes('numeric')) ? 'numeric' : 'categorical'),
         ...(child.value !== undefined ? { value: child.value } : {}),
       }));
       segmentLogic.value = key === 'any' ? 'OR' : 'AND';
