@@ -1557,11 +1557,24 @@
 
     function rebuildTargetOptions() {
       const previous = targetColumnSelect.value || currentTarget;
-      targetColumnSelect.innerHTML = currentNumericColumns.map((col) => `<option value="${escapeHtml(col)}">${escapeHtml(col)}</option>`).join('');
-      if (currentNumericColumns.includes(previous)) {
+      const optionNames = [];
+      const pushOption = (name) => {
+        if (!name || optionNames.includes(name)) return;
+        optionNames.push(name);
+      };
+
+      currentNumericColumns.forEach(pushOption);
+      (recommendationState.outcome_candidates || []).forEach((item) => pushOption(item?.name));
+      pushOption(recommendationState.target);
+      pushOption(currentTarget);
+
+      targetColumnSelect.innerHTML = optionNames.map((col) => `<option value="${escapeHtml(col)}">${escapeHtml(col)}</option>`).join('');
+      if (optionNames.includes(previous)) {
         targetColumnSelect.value = previous;
-      } else if (currentNumericColumns[0]) {
-        targetColumnSelect.value = currentNumericColumns[0];
+      } else if (optionNames.includes(recommendationState.target)) {
+        targetColumnSelect.value = recommendationState.target;
+      } else if (optionNames[0]) {
+        targetColumnSelect.value = optionNames[0];
       }
       currentTarget = targetColumnSelect.value;
       rebuildTargetDisplayInput();
