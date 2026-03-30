@@ -88,6 +88,8 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn("inspectOutcomeButton", html)
         self.assertIn("recommendedOutcomeLabel", html)
         self.assertIn("recommendedOutcomeReason", html)
+        self.assertIn("Also considered:", html)
+        self.assertNotIn("(12.0)", html)
         self.assertIn("Nested condition tree", html)
         self.assertIn("segmentTreeCanvas", html)
         self.assertIn("overall_sat", html)
