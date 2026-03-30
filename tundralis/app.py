@@ -737,7 +737,15 @@ def _build_recommendation(columns: list[str], column_profiles: dict[str, dict], 
         profile = column_profiles.get(col, {})
         score = _target_score(col, profile)
         if score > -999 and not _looks_like_text_artifact(col) and not _looks_like_choice_order_artifact(col):
-            outcome_candidates.append({"name": col, "score": round(score, 2)})
+            outcome_candidates.append({
+                "name": col,
+                "score": round(score, 2),
+                "recommended_label": _recommended_display_label(col, profile),
+                "question_text": profile.get("question_text"),
+                "semantic_class": profile.get("semantic_class"),
+                "semantic_confidence": profile.get("semantic_confidence"),
+                "warnings": profile.get("warnings", []),
+            })
     outcome_candidates.sort(key=lambda item: (-item["score"], item["name"]))
 
     if saved_predictors:

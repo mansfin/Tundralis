@@ -74,6 +74,24 @@ class TestRecommendedLabels(unittest.TestCase):
         self.assertGreaterEqual(len(top_values), 2)
         self.assertIn(company_size.get("semantic_class"), {"labeled_categorical", "nominal_coded_numeric", "identifier_helper"})
 
+    def test_policy_measurement_target_outcomes_surface_recommended_labels(self):
+        bundle = build_prep_bundle(
+            ROOT / "app_runtime" / "uploads" / "c12f7621c875_[FINAL+DATA+Full+Launch+COPY+version+Oct+6]+Policy+Measurement+Survey+-+Copy_December+31,+2025_11.51_labels.csv"
+        )
+        df = bundle.working_df
+        recommendation = _build_recommendation(
+            list(df.columns),
+            bundle.column_profiles,
+            df.select_dtypes(include="number").columns.tolist(),
+        )
+        self.assertEqual(recommendation.get("target"), "NPS_2")
+        recommended_labels = recommendation.get("recommended_labels", {})
+        self.assertIn("NPS_2", recommended_labels)
+        self.assertTrue(any(token in recommended_labels["NPS_2"].lower() for token in ["recommend", "google ads", "overall"]))
+        outcome_candidates = {item["name"]: item for item in recommendation.get("outcome_candidates", [])}
+        self.assertIn("NPS_2", outcome_candidates)
+        self.assertEqual(outcome_candidates["NPS_2"].get("recommended_label"), recommended_labels["NPS_2"])
+
     def test_qualtrics_raw_export_stays_low_confidence_without_overclaiming_labels(self):
         bundle = build_prep_bundle(ROOT / "data" / "fixtures" / "qualtrics_raw_export.csv")
         df = bundle.working_df
