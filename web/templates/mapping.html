@@ -2405,6 +2405,7 @@
       rebuildTargetDisplayInput();
       rebuildPredictorUI();
       updateConfirmationPanel();
+      renderRecommendationSummary();
       renderInspector(currentTarget);
     });
     inspectOutcomeButton?.addEventListener('click', () => renderInspector(targetColumnSelect.value));
@@ -2441,6 +2442,7 @@
     syncSegmentOperatorOptions(segmentRuleColumn.value);
     syncInspectorCollapse();
     updateConfirmationPanel();
+    renderRecommendationSummary();
     setWorkflowTab('model');
     renderInspector(inspectorColumnSelect.value || targetColumnSelect.value || allDisplayColumns()[0]);
   </script>
