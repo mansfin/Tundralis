@@ -88,17 +88,19 @@ def _parse_json_field(value: str | None) -> list[dict]:
 
 TARGET_KEYWORDS_STRONG = [
     "overall_sat", "overall satisfaction", "overall_satisfaction", "satisfaction", "sat",
-    "recommend", "likelihood_to_recommend", "nps", "recommendation", "experience", "value",
+    "recommend", "likelihood_to_recommend", "likely to recommend", "willingness to recommend", "nps", "recommendation", "experience", "value",
+    "overall_experience", "overall experience", "intent to stay", "intend to stay", "loyalty", "advocacy",
 ]
-TARGET_KEYWORDS_WEAK = ["overall", "brand", "rating", "score"]
+TARGET_KEYWORDS_WEAK = ["overall", "brand", "rating", "score", "index"]
 TARGET_KEYWORDS_CANONICAL_OUTCOME = [
-    "nps", "recommend", "likelihood_to_recommend", "engagement", "index", "overall_sat", "overall_satisfaction", "overall_experience",
+    "nps", "recommend", "likelihood_to_recommend", "engagement", "index", "overall_sat", "overall_satisfaction", "overall_experience", "intent to stay", "intend to stay",
 ]
 ATTRIBUTE_STYLE_TOKENS = [
     "quality", "support", "friendliness", "handling", "checkin", "ease", "reliability", "tools", "setup", "reporting", "recognition", "growth", "workload", "feature", "implementation", "trust", "bag", "staff", "fare",
+    "value for money", "value_for_money", "customer support", "support quality", "ease of use", "ease_of_use", "product quality", "quality score",
 ]
 CANONICAL_OUTCOME_BONUS_TOKENS = [
-    "engagement_index", "nps_score", "overall_experience", "overall_sat", "overall_satisfaction", "likelihood_to_recommend",
+    "engagement_index", "nps_score", "overall_experience", "overall_sat", "overall_satisfaction", "likelihood_to_recommend", "intent_to_stay", "intend_to_stay",
 ]
 DEFAULT_RECOMMENDED_DRIVER_LIMIT = 24
 MAX_PER_FAMILY = 3

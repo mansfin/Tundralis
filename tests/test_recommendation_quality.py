@@ -10,6 +10,7 @@ from tundralis.app import (
     _looks_like_brand_tracker_debris,
     _looks_like_geo_artifact,
     _looks_like_text_artifact,
+    _target_score,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -51,6 +52,20 @@ class TestRecommendationQuality(unittest.TestCase):
         self.assertLess(_interpretability_score('Q125_4'), 0)
         self.assertGreater(_interpretability_score('overall_satisfaction'), 0)
         self.assertGreater(_interpretability_score('sentiment_score'), 0)
+
+    def test_target_score_prefers_intend_to_stay_style_outcomes(self):
+        profile = {
+            "inferred_type": "numeric",
+            "semantic_class": "ordinal_numeric",
+            "semantic_confidence": "medium",
+            "warnings": ["likely_likert_or_coded_categorical"],
+            "distinct_count": 5,
+            "missing_pct": 4,
+            "non_null_count": 120,
+            "question_text": "Intent to stay at company",
+            "semantic_text": "intend_to_stay | Intent to stay at company",
+        }
+        self.assertGreater(_target_score("intend_to_stay", profile), 10)
 
 
 if __name__ == "__main__":
