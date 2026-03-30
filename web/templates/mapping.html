@@ -764,9 +764,9 @@
       const confidence = recommendationConfidenceState(excluded.length);
 
       const outcomeLabel = displayNameValue(outcome);
-      recommendationOutcome.textContent = outcome;
+      recommendationOutcome.textContent = outcomeLabel || outcome;
       recommendedOutcomeLabel.textContent = outcome && outcome !== '—'
-        ? `Suggested report label: ${outcomeLabel}`
+        ? (outcomeLabel && outcomeLabel !== outcome ? `Field: ${outcome} · Report label: ${outcomeLabel}` : `Suggested report label: ${outcomeLabel}`)
         : 'Suggested report label: —';
       recommendedOutcomeReason.textContent = outcome && outcome !== '—'
         ? 'Tundralis picked this as the strongest candidate business outcome based on name signal, numeric fit, and usable rows.'
@@ -869,7 +869,9 @@
 
     function updateConfirmationPanel() {
       const predictors = currentPredictorSelections();
-      confirmOutcome.textContent = targetColumnSelect.value || '—';
+      const outcomeField = targetColumnSelect.value || '—';
+      const outcomeLabel = outcomeField !== '—' ? displayNameValue(outcomeField) : '—';
+      confirmOutcome.textContent = outcomeLabel || outcomeField;
       confirmPredictorCount.textContent = predictors.length;
       confirmRecodeCount.textContent = savedRecodesState.length;
       confirmSegmentCount.textContent = savedSegmentDefs.length;
@@ -1380,7 +1382,8 @@
       targetDisplayNameContainer.innerHTML = missingNumericChoice
         ? '<div class="empty-state compact">Pick an outcome field to continue.</div>'
         : `<input type="text" name="display_name__${escapeHtml(target)}" placeholder="${escapeHtml(recommendedLabelFor(target) || 'Optional display label')}" value="${escapeHtml(displayNameValue(target))}">`;
-      inspectOutcomeButton.textContent = hasResolvedTarget ? target : '—';
+      const targetLabel = hasResolvedTarget ? displayNameValue(target) : '';
+      inspectOutcomeButton.textContent = hasResolvedTarget ? (targetLabel || target) : '—';
       inspectOutcomeButton.dataset.columnName = hasResolvedTarget ? target : '';
     }
 

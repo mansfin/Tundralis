@@ -235,6 +235,9 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn('Product quality', html)
         self.assertIn('Ease of use', html)
         self.assertIn('No user-facing helper/admin fields need attention.', html)
+        self.assertIn('Field: ${outcome} · Report label: ${outcomeLabel}', html)
+        self.assertIn('confirmOutcome.textContent = outcomeLabel || outcomeField;', html)
+        self.assertIn('inspectOutcomeButton.textContent = hasResolvedTarget ? (targetLabel || target) :', html)
         self.assertIn('renderRecommendationSummary();', html)
 
     def test_mapping_page_reloads_saved_draft_state(self):
