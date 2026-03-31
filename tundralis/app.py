@@ -881,6 +881,14 @@ def _load_mapping_state(job_id: str) -> dict:
         return _normalize_mapping_state(None)
 
 
+def _mapping_state_exists(job_id: str) -> bool:
+    return _mapping_path(job_id).exists()
+
+
+def _job_artifacts_exist(job_id: str) -> bool:
+    return _job_dir(job_id).exists() and any(_job_dir(job_id).iterdir())
+
+
 def _persist_mapping_state(job_id: str, mapping: dict) -> Path:
     mapping_path = _mapping_path(job_id)
     mapping_path.write_text(json.dumps(_normalize_mapping_state(mapping), indent=2), encoding="utf-8")
@@ -1128,11 +1136,18 @@ def mapping_page(job_id: str):
     filename = _lookup_uploaded_filename(job_id)
     if not filename:
         abort(404)
+    if _job_artifacts_exist(job_id) and not _mapping_state_exists(job_id):
+        abort(404)
+    upload_path = UPLOAD_DIR / filename
+    if not upload_path.exists():
+        abort(404)
     mapping_state = _load_mapping_state(job_id)
     try:
         context = _mapping_context(filename, job_id=job_id, mapping_state=mapping_state)
+    except FileNotFoundError:
+        abort(404)
     except Exception as exc:
-        error_id = _log_inspect_failure(job_id, UPLOAD_DIR / filename, exc)
+        error_id = _log_inspect_failure(job_id, upload_path, exc)
         return render_template("index.html", error_card=_friendly_inspect_error(exc, error_id)), 500
     return render_template("mapping.html", **context)
 

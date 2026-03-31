@@ -537,6 +537,62 @@ class TestWebMapping(unittest.TestCase):
         self.assertIn("boolean_flag", saved_json)
         self.assertIn("segment_previews", saved_json)
 
+    def test_mapping_page_404s_when_upload_missing(self):
+        client = app.test_client()
+        response = client.get("/mapping/notarealjob")
+        self.assertEqual(response.status_code, 404)
+
+    def test_mapping_page_404s_when_upload_deleted_after_job_creation(self):
+        client = app.test_client()
+        csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
+
+        upload_response = client.post(
+            "/upload",
+            data={"survey_file": (io.BytesIO(csv_bytes), "client_style_kda.csv")},
+            content_type="multipart/form-data",
+            headers={"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"},
+        )
+        self.assertEqual(upload_response.status_code, 200)
+        payload = upload_response.get_json()
+        filename = payload["filename"]
+
+        client.post(
+            "/preview",
+            json={
+                "job_id": payload["job_id"],
+                "filename": filename,
+                "target_column": "overall_sat",
+                "predictor_columns": ["product_quality_score", "ease_use_score"],
+            },
+        )
+
+        upload_path = ROOT / "app_runtime" / "uploads" / filename
+        if upload_path.exists():
+            upload_path.unlink()
+
+        response = client.get(payload["redirect_url"])
+        self.assertEqual(response.status_code, 404)
+
+    def test_mapping_page_404s_when_artifacts_exist_but_mapping_state_missing(self):
+        client = app.test_client()
+        csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
+
+        upload_response = client.post(
+            "/upload",
+            data={"survey_file": (io.BytesIO(csv_bytes), "client_style_kda.csv")},
+            content_type="multipart/form-data",
+            headers={"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"},
+        )
+        self.assertEqual(upload_response.status_code, 200)
+        payload = upload_response.get_json()
+        job_id = payload["job_id"]
+        job_dir = ROOT / "app_runtime" / "artifacts" / job_id
+        job_dir.mkdir(parents=True, exist_ok=True)
+        (job_dir / "analysis_run.json").write_text("{}", encoding="utf-8")
+
+        response = client.get(payload["redirect_url"])
+        self.assertEqual(response.status_code, 404)
+
     def test_results_page_404s_when_artifacts_missing(self):
         client = app.test_client()
         response = client.get("/results/notarealjob")
