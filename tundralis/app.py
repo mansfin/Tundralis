@@ -1361,14 +1361,17 @@ def run_job():
         context = _mapping_context(filename, job_id=job_id, mapping_state=mapping_state)
         return render_template("mapping.html", error=str(exc), **context), 400
 
+    effective_display_name_map = context.get("saved_display_name_map") or display_name_map
+    effective_semantic_overrides = context.get("saved_semantic_overrides") or semantic_overrides
+
     mapping = {
         "target_column": target_column,
         "segment_columns": segment_columns,
         "segment_definitions": normalized_segments,
         "recode_definitions": recode_definitions,
         "predictor_columns": predictors,
-        "display_name_map": display_name_map,
-        "semantic_overrides": semantic_overrides,
+        "display_name_map": effective_display_name_map,
+        "semantic_overrides": effective_semantic_overrides,
     }
     mapping_path = _persist_mapping_state(job_id, mapping)
 

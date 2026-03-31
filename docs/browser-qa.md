@@ -61,13 +61,42 @@ This means:
 
 1. Start/confirm Windows Chrome is attached via OpenClaw browser status.
 2. Navigate with embedded basic auth.
-3. Use snapshot to confirm the real page title/headings loaded.
-4. If upload/click automation fails, treat that as a node browser tooling issue unless the app also fails in a manual browser session.
-5. For manual fallback, perform the upload in the visible Windows browser and then use snapshots to inspect the resulting mapping page.
+3. Use snapshot or evaluate to confirm the real page title/headings loaded.
+4. For click actions, verify the resulting DOM state instead of trusting the raw click return by itself.
+5. For uploads, stage the file into the Windows node's OpenClaw uploads directory first, then use `browser upload` against that Windows-local path.
+6. If upload/click automation still fails, treat that as a node browser tooling issue unless the app also fails in a manual browser session.
+
+## Dependable action pattern
+
+For remote/node browser work, prefer this sequence:
+
+1. `navigate`
+2. `snapshot` or `evaluate`
+3. `click`
+4. immediate `snapshot` or `evaluate` to verify post-click state
+
+Example post-click verification signals:
+- alerts/toasts appeared
+- title changed
+- URL changed
+- expected DOM node exists
+- button disabled/enabled state changed
+
+## Upload staging note
+
+`browser upload` must use a path local to the Windows node, not a Linux workspace path.
+
+Observed required path shape on the node:
+
+```text
+C:\Users\ClawDaddy\AppData\Local\Temp\openclaw\uploads\...
+```
+
+So a dependable end-to-end upload flow needs a Windows-side staging step before calling `browser upload`.
 
 ## Next debugging target
 
-If we want reliable automation here, debug the Windows browser proxy path separately from Tundralis:
-- screenshot timeout behavior
-- click/action timeout behavior
-- Windows-local upload staging path for `browser upload`
+If we want fully reliable automation here, debug the Windows browser proxy path separately from Tundralis:
+- screenshot timeout behavior when the page is authenticated
+- click return semantics vs actual click success
+- Windows-local upload staging / transfer path for `browser upload`

@@ -542,6 +542,157 @@ class TestWebMapping(unittest.TestCase):
         response = client.get("/results/notarealjob")
         self.assertEqual(response.status_code, 404)
 
+    def test_end_to_end_web_smoke_persists_run_and_reloads_results(self):
+        client = app.test_client()
+        csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
+
+        upload_response = client.post(
+            "/upload",
+            data={"survey_file": (io.BytesIO(csv_bytes), "client_style_kda.csv")},
+            content_type="multipart/form-data",
+            headers={"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"},
+        )
+        self.assertEqual(upload_response.status_code, 200)
+        upload_payload = upload_response.get_json()
+        job_id = upload_payload["job_id"]
+        filename = upload_payload["filename"]
+
+        mapping_response = client.get(upload_payload["redirect_url"])
+        self.assertEqual(mapping_response.status_code, 200)
+        mapping_html = mapping_response.get_data(as_text=True)
+        self.assertIn("Run KDA", mapping_html)
+        self.assertIn("Run KDA with recommended setup", mapping_html)
+
+        run_response = client.post(
+            "/run",
+            data={
+                "job_id": job_id,
+                "filename": filename,
+                "target_column": "overall_sat",
+                "predictor_columns": ["product_quality_score", "ease_use_score", "support_experience", "value_for_money"],
+                "segment_definitions": json.dumps([
+                    {
+                        "name": "Enterprise APAC or Mid-Market EMEA",
+                        "tree": {
+                            "any": [
+                                {
+                                    "all": [
+                                        {"column": "segment", "operator": "equals", "value": "Enterprise"},
+                                        {"column": "region", "operator": "equals", "value": "APAC"},
+                                    ]
+                                },
+                                {
+                                    "all": [
+                                        {"column": "segment", "operator": "equals", "value": "Mid-Market"},
+                                        {"column": "region", "operator": "equals", "value": "EMEA"},
+                                    ]
+                                },
+                            ]
+                        },
+                    }
+                ]),
+                "recode_definitions": json.dumps([]),
+                "semantic_overrides": json.dumps({}),
+                "display_name__overall_sat": "Overall satisfaction",
+                "display_name__product_quality_score": "Product Quality Score",
+                "display_name__ease_use_score": "Ease Use Score",
+                "display_name__support_experience": "Support Experience",
+                "display_name__value_for_money": "Value For Money",
+            },
+        )
+        self.assertEqual(run_response.status_code, 200)
+        run_html = run_response.get_data(as_text=True)
+        self.assertIn("Analysis complete", run_html)
+        self.assertIn("Download report", run_html)
+        self.assertIn("Decision summary", run_html)
+
+        artifacts_dir = ROOT / "app_runtime" / "artifacts" / job_id
+        mapping_path = ROOT / "app_runtime" / "mappings" / f"{job_id}.json"
+        self.assertTrue(mapping_path.exists())
+        self.assertTrue((artifacts_dir / "analysis_run.json").exists())
+        self.assertTrue((artifacts_dir / "report.pptx").exists())
+        self.assertTrue((artifacts_dir / "importance_bar.png").exists())
+
+        durable_response = client.get(f"/results/{job_id}")
+        self.assertEqual(durable_response.status_code, 200)
+        durable_html = durable_response.get_data(as_text=True)
+        self.assertIn("Analysis complete", durable_html)
+        self.assertIn("Deliverables", durable_html)
+        self.assertIn("Enterprise APAC or Mid-Market EMEA", durable_html)
+
+    def test_run_persists_effective_semantic_overrides_for_labeled_target(self):
+        client = app.test_client()
+        csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
+
+        upload_response = client.post(
+            "/upload",
+            data={"survey_file": (io.BytesIO(csv_bytes), "client_style_kda.csv")},
+            content_type="multipart/form-data",
+            headers={"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"},
+        )
+        payload = upload_response.get_json()
+        job_id = payload["job_id"]
+        filename = payload["filename"]
+
+        mocked_context = {
+            "job_id": job_id,
+            "filename": filename,
+            "display_filename": "client_style_kda.csv",
+            "columns": ["NPS_2", "product_quality_score", "ease_use_score"],
+            "numeric_columns": ["product_quality_score", "ease_use_score"],
+            "inferred_target": "NPS_2",
+            "inferred_predictors": ["product_quality_score", "ease_use_score"],
+            "predictor_candidates": [],
+            "recommendation": {"target": "NPS_2", "predictors": []},
+            "column_profiles": {},
+            "column_profile_count": 3,
+            "column_profiles_trimmed": False,
+            "column_profiles_inline_limit": 25,
+            "segment_previews": [],
+            "normalized_segment_definitions": [],
+            "saved_recode_definitions": [],
+            "saved_segment_columns": [],
+            "saved_display_name_map": {"NPS_2": "Likelihood to recommend"},
+            "saved_semantic_overrides": {"NPS_2": "ordinal_numeric"},
+        }
+
+        with patch("tundralis.app._mapping_context", return_value=mocked_context), \
+             patch("tundralis.app.subprocess.run") as mocked_run, \
+             patch("tundralis.app._load_result_context", return_value={
+                 "job_id": job_id,
+                 "filename": filename,
+                 "display_filename": "client_style_kda.csv",
+                 "payload": {
+                     "input_summary": {"rows_modeled": 10, "predictor_columns": ["product_quality_score", "ease_use_score"]},
+                     "model_diagnostics": {"r_squared": 0.3, "adj_r_squared": 0.28, "method_agreement": "high", "nonlinear_signal": "unknown"},
+                     "drivers": [],
+                     "segment_summaries": [],
+                 },
+                 "logs": "",
+                 "preview_images": [],
+             }):
+            mocked_run.return_value.returncode = 0
+            mocked_run.return_value.stdout = "ok"
+            mocked_run.return_value.stderr = ""
+            response = client.post(
+                "/run",
+                data={
+                    "job_id": job_id,
+                    "filename": filename,
+                    "target_column": "NPS_2",
+                    "predictor_columns": ["product_quality_score", "ease_use_score"],
+                    "segment_definitions": "[]",
+                    "recode_definitions": "[]",
+                    "semantic_overrides": "[]",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        mapping_path = ROOT / "app_runtime" / "mappings" / f"{job_id}.json"
+        mapping = json.loads(mapping_path.read_text(encoding="utf-8"))
+        self.assertEqual(mapping["semantic_overrides"].get("NPS_2"), "ordinal_numeric")
+        self.assertEqual(mapping["display_name_map"].get("NPS_2"), "Likelihood to recommend")
+
     def test_mapping_page_includes_recode_create_handler(self):
         client = app.test_client()
         csv_bytes = (ROOT / "data" / "fixtures" / "client_style_kda.csv").read_bytes()
