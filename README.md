@@ -89,10 +89,26 @@ Verify CDP is live:
 Invoke-WebRequest http://127.0.0.1:9222/json/version
 ```
 
+Recommended durable startup split:
+- Task 1: `OpenClaw Node` launches the OpenClaw Windows node host
+- Task 2: launch dedicated automation Chrome with the CDP flags above at login
+
 Why:
 - avoids flaky interaction with a personal Chrome profile
 - keeps browser-node automation stable after terminal/session churn
 - gives OpenClaw a predictable CDP target for browser QA
+
+### Runtime cleanup
+
+To preview stale runtime cleanup without deleting anything:
+
+```bash
+python scripts/prune_runtime.py --dry-run
+```
+
+Default behavior only targets:
+- old uploads with no persisted mapping and no non-empty artifact directory
+- empty artifact directories older than the configured threshold
 
 ### 2. Generate sample data (optional)
 

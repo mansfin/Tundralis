@@ -119,3 +119,8 @@ Use this as the production browser smoke for the main KDA flow:
    - `Top actions to prioritize`
    - `Deliverables`
 7. refresh or reopen `/results/<job_id>` and confirm it still renders
+
+Suggested automation checks:
+- server-side: poll `/results/<job_id>` until 200 or timeout
+- browser-side: assert title `tundralis · results`
+- browser-side: assert `Download report` and `Download JSON` links exist
