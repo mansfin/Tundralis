@@ -93,6 +93,13 @@ Recommended durable startup split:
 - Task 1: `OpenClaw Node` launches the OpenClaw Windows node host
 - Task 2: launch dedicated automation Chrome with the CDP flags above at login
 
+Task-ready helper scripts now live here:
+- `scripts/windows/start-automation-chrome.ps1`
+- `scripts/windows/register-automation-chrome-task.ps1`
+
+The registration helper assumes the PowerShell launcher script is copied to a stable Windows path such as:
+- `C:\Users\Nick\tundralis\scripts\windows\start-automation-chrome.ps1`
+
 Why:
 - avoids flaky interaction with a personal Chrome profile
 - keeps browser-node automation stable after terminal/session churn
@@ -103,12 +110,19 @@ Why:
 To preview stale runtime cleanup without deleting anything:
 
 ```bash
-python scripts/prune_runtime.py --dry-run
+python3 scripts/prune_runtime.py --dry-run
+```
+
+To run the live smoke in a cron-friendly way:
+
+```bash
+./scripts/run_live_smoke.sh
 ```
 
 Default behavior only targets:
 - old uploads with no persisted mapping and no non-empty artifact directory
 - empty artifact directories older than the configured threshold
+- successful artifact directories older than the configured retention window (`--artifact-max-age-days`, default 14)
 
 ### 2. Generate sample data (optional)
 

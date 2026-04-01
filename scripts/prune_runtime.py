@@ -37,11 +37,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description='Prune stale Tundralis runtime files safely.')
     parser.add_argument('--upload-max-age-days', type=float, default=7.0)
     parser.add_argument('--empty-artifact-max-age-days', type=float, default=1.0)
+    parser.add_argument('--artifact-max-age-days', type=float, default=14.0)
     parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
 
     uploads_removed = []
     artifact_dirs_removed = []
+    successful_artifact_dirs_removed = []
 
     for upload in sorted(UPLOADS.glob('*')):
         if not upload.is_file():
@@ -57,10 +59,15 @@ def main() -> int:
     for artifact_dir in sorted(ARTIFACTS.glob('*')):
         if not artifact_dir.is_dir():
             continue
-        if any(artifact_dir.iterdir()):
+        children = list(artifact_dir.iterdir())
+        if not children:
+            if age_days(artifact_dir) > args.empty_artifact_max_age_days:
+                artifact_dirs_removed.append(artifact_dir)
             continue
-        if age_days(artifact_dir) > args.empty_artifact_max_age_days:
-            artifact_dirs_removed.append(artifact_dir)
+        if age_days(artifact_dir) <= args.artifact_max_age_days:
+            continue
+        if (artifact_dir / 'analysis_run.json').exists():
+            successful_artifact_dirs_removed.append(artifact_dir)
 
     print(f'dry_run={args.dry_run}')
     print(f'uploads_to_remove={len(uploads_removed)}')
@@ -75,9 +82,17 @@ def main() -> int:
     if len(artifact_dirs_removed) > 50:
         print(f'  ... {len(artifact_dirs_removed)-50} more artifact dirs')
 
+    print(f'successful_artifact_dirs_to_remove={len(successful_artifact_dirs_removed)}')
+    for path in successful_artifact_dirs_removed[:50]:
+        print(f'  successful_artifact_dir {path.relative_to(ROOT)} age_days={age_days(path):.2f}')
+    if len(successful_artifact_dirs_removed) > 50:
+        print(f'  ... {len(successful_artifact_dirs_removed)-50} more successful artifact dirs')
+
     for path in uploads_removed:
         safe_remove(path, args.dry_run)
     for path in artifact_dirs_removed:
+        safe_remove(path, args.dry_run)
+    for path in successful_artifact_dirs_removed:
         safe_remove(path, args.dry_run)
 
     return 0
