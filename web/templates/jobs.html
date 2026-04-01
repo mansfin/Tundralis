@@ -39,6 +39,7 @@
             <div class="metric-card"><span>Updated</span><strong>{{ job.updated_at or '—' }}</strong></div>
             <div class="metric-card"><span>Rows</span><strong>{{ job.rows_modeled if job.rows_modeled is not none else '—' }}</strong></div>
             <div class="metric-card"><span>Drivers</span><strong>{{ job.predictor_count if job.predictor_count is not none else '—' }}</strong></div>
+            <div class="metric-card"><span>Expires</span><strong>{{ job.expires_at or '—' }}</strong></div>
           </div>
           {% if job.error %}
           <div class="error-card error-card-error">

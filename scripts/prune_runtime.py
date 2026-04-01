@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import time
 from pathlib import Path
@@ -11,6 +12,7 @@ RUNTIME = ROOT / 'app_runtime'
 UPLOADS = RUNTIME / 'uploads'
 MAPPINGS = RUNTIME / 'mappings'
 ARTIFACTS = RUNTIME / 'artifacts'
+JOB_REGISTRY = RUNTIME / 'jobs.json'
 
 
 def age_days(path: Path) -> float:
@@ -31,6 +33,37 @@ def safe_remove(path: Path, dry_run: bool) -> None:
         shutil.rmtree(path, ignore_errors=True)
     elif path.exists():
         path.unlink(missing_ok=True)
+
+
+def load_jobs() -> list[dict]:
+    if not JOB_REGISTRY.exists():
+        return []
+    try:
+        payload = json.loads(JOB_REGISTRY.read_text(encoding='utf-8'))
+    except json.JSONDecodeError:
+        return []
+    return payload if isinstance(payload, list) else []
+
+
+def save_jobs(rows: list[dict], dry_run: bool) -> None:
+    if dry_run:
+        return
+    JOB_REGISTRY.write_text(json.dumps(rows, indent=2), encoding='utf-8')
+
+
+def mark_jobs_pruned(job_ids: set[str], dry_run: bool) -> None:
+    if not job_ids:
+        return
+    rows = load_jobs()
+    updated = False
+    for row in rows:
+        if row.get('job_id') in job_ids:
+            row['artifacts_pruned'] = True
+            row['results_url'] = None
+            row['status'] = 'expired'
+            updated = True
+    if updated:
+        save_jobs(rows, dry_run=dry_run)
 
 
 def main() -> int:
@@ -94,6 +127,8 @@ def main() -> int:
         safe_remove(path, args.dry_run)
     for path in successful_artifact_dirs_removed:
         safe_remove(path, args.dry_run)
+
+    mark_jobs_pruned({path.name for path in successful_artifact_dirs_removed}, dry_run=args.dry_run)
 
     return 0
 

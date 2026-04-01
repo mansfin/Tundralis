@@ -141,7 +141,9 @@ def _upsert_job_record(job_id: str, **updates) -> dict:
     if row is None:
         row = {"job_id": job_id, "created_at": _utc_now()}
         rows.append(row)
-    row.update({k: v for k, v in updates.items() if v is not None})
+    for k, v in updates.items():
+        if v is not None:
+            row[k] = v
     row["updated_at"] = _utc_now()
     status = row.get("status") or "uploaded"
     row.update(_job_urls(job_id, status=status))
@@ -1383,6 +1385,8 @@ def _run_job_command(job_id: str, filename: str, mapping_path: Path, data_path: 
             status="completed",
             predictor_count=len(input_summary.get("predictor_columns") or []),
             rows_modeled=input_summary.get("rows_modeled"),
+            completed_at=_utc_now(),
+            expires_at=time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(time.time() + 14 * 86400)),
             error=None,
         )
     except Exception as exc:
@@ -1525,7 +1529,9 @@ def job_status_page(job_id: str):
 @app.get("/results/<job_id>")
 @basic_auth
 def results_page(job_id: str):
-    return render_template("result.html", **_load_result_context(job_id))
+    context = _load_result_context(job_id)
+    context["job_meta"] = _get_job_record(job_id) or {}
+    return render_template("result.html", **context)
 
 
 @app.get("/artifacts/<job_id>/<path:name>")
