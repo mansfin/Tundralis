@@ -140,7 +140,7 @@
                   </div>
                 </div>
                 <div class="actions recommendation-actions">
-                  <button type="button" id="runRecommendedButton">Run KDA with recommended setup</button>
+                  <button type="button" id="runRecommendedButton" onclick="window.__tundralisSubmitRecommended?.()">Run KDA with recommended setup</button>
                   <button type="button" class="button-link secondary" id="reviewMappingButton">Review drivers</button>
                   <button type="button" class="button-link secondary" id="openAdjustDataButton">Adjust data setup</button>
                   <button type="button" class="button-link secondary" id="openSegmentsButton">Add segments</button>
@@ -2487,11 +2487,11 @@
     document.getElementById('reviewMappingButton')?.addEventListener('click', () => setWorkflowTab('model'));
     document.getElementById('openAdjustDataButton')?.addEventListener('click', () => setWorkflowTab('recode'));
     document.getElementById('openSegmentsButton')?.addEventListener('click', () => setWorkflowTab('segment'));
-    document.getElementById('runRecommendedButton')?.addEventListener('click', () => {
+    window.__tundralisSubmitRecommended = () => {
       updateConfirmationPanel();
       if (confirmationIssues().length > 0) {
         setWorkflowTab('confirm');
-        return;
+        return false;
       }
       savedDisplayNameMap = collectDisplayNameMap();
       syncDisplayNameHiddenFields();
@@ -2502,12 +2502,13 @@
         rebuildPredictorUI();
       }
       const form = document.getElementById('mappingForm');
-      if (!form) return;
-      if (typeof form.requestSubmit === 'function') {
-        form.requestSubmit();
-        return;
-      }
+      if (!form) return false;
       form.submit();
+      return true;
+    };
+    document.getElementById('runRecommendedButton')?.addEventListener('click', (event) => {
+      event.preventDefault();
+      window.__tundralisSubmitRecommended();
     });
     applyCodebookButton?.addEventListener('click', async () => {
       const file = codebookFileInput?.files?.[0];
