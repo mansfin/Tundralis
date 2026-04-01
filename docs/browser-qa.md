@@ -100,3 +100,22 @@ If we want fully reliable automation here, debug the Windows browser proxy path 
 - screenshot timeout behavior when the page is authenticated
 - click return semantics vs actual click success
 - Windows-local upload staging / transfer path for `browser upload`
+
+## Recommended CTA golden-path smoke
+
+Use this as the production browser smoke for the main KDA flow:
+
+1. upload `client_style_kda.csv`
+2. confirm mapping page renders the recommended state
+   - outcome visible
+   - `10 selected` drivers
+   - usable responses shown
+3. trigger `Run KDA with recommended setup`
+4. confirm browser transitions through `/run`
+5. confirm durable `/results/<job_id>` returns `200`
+6. confirm results page renders:
+   - `Analysis complete`
+   - `Decision summary`
+   - `Top actions to prioritize`
+   - `Deliverables`
+7. refresh or reopen `/results/<job_id>` and confirm it still renders
